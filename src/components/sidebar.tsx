@@ -54,7 +54,7 @@ export function Sidebar({ user }: SidebarProps) {
       <nav className="flex-1 space-y-1">
         {items.map((item) => {
           if (item.adminOnly && user.role !== "admin") return null;
-          const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+          const active = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
           return (
             <Link

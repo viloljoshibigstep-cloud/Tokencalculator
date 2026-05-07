@@ -22,6 +22,7 @@ import {
   computeKpis,
   fetchUsage,
   fetchLatestSnapshot,
+  rangeToPeriod,
   type CodeburnSnapshot,
   type UsageRow,
 } from "@/lib/queries";
@@ -31,27 +32,33 @@ export default function OverviewPage() {
   const [range, setRange] = useRange("7D");
   const [rows, setRows] = useState<UsageRow[]>([]);
   const [allRows, setAllRows] = useState<UsageRow[]>([]);
-  const [snapshot, setSnapshot] = useState<CodeburnSnapshot | null>(null);
+  const [scopedSnapshot, setScopedSnapshot] = useState<CodeburnSnapshot | null>(null);
+  const [allSnapshot, setAllSnapshot] = useState<CodeburnSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const supabase = createClient();
     setLoading(true);
     let cancelled = false;
+    const period = rangeToPeriod(range);
     Promise.all([
       fetchUsage(supabase, { range }),
       fetchUsage(supabase, { range: "1Y" }),
-      // Aggregate snapshot across all providers, all-time. Falls back to whatever
-      // snapshot exists if the agent hasn't synced "all/all" yet.
+      // Range-matched snapshot: tokens, sessions, messages come from this exactly.
+      fetchLatestSnapshot(supabase, { provider: "all", period }).then(
+        (s) => s ?? fetchLatestSnapshot(supabase, { provider: "all", period: "all" }),
+      ),
+      // All-time snapshot: stable source for top sessions / heatmap context.
       fetchLatestSnapshot(supabase, { provider: "all", period: "all" }).then(
         (s) => s ?? fetchLatestSnapshot(supabase),
       ),
     ])
-      .then(([scoped, all, snap]) => {
+      .then(([scoped, all, scopedSnap, allSnap]) => {
         if (cancelled) return;
         setRows(scoped);
         setAllRows(all);
-        setSnapshot(snap);
+        setScopedSnapshot(scopedSnap);
+        setAllSnapshot(allSnap);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -61,15 +68,17 @@ export default function OverviewPage() {
     };
   }, [range]);
 
-  const kpis = useMemo(() => computeKpis(rows, snapshot), [rows, snapshot]);
-  const allTimeKpis = useMemo(() => computeKpis(allRows, snapshot), [allRows, snapshot]);
+  // Range-scoped KPIs use the matching-period snapshot for exact tokens/sessions.
+  const kpis = useMemo(() => computeKpis(rows, scopedSnapshot), [rows, scopedSnapshot]);
+  // All-time KPIs (active days, streak) always use the full event set + all-snapshot.
+  const allTimeKpis = useMemo(() => computeKpis(allRows, allSnapshot), [allRows, allSnapshot]);
   const daily = useMemo(() => bucketByDay(rows), [rows]);
   const heatmap = useMemo(() => bucketByDay(allRows), [allRows]);
-  const recentSessions = (snapshot?.topSessions ?? [])
+  const recentSessions = (allSnapshot?.topSessions ?? [])
     .slice()
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  const sessionsCount = snapshot?.overview?.sessions ?? kpis.totalSessions;
+  const sessionsCount = scopedSnapshot?.overview?.sessions ?? kpis.totalSessions;
   const avgPerSession = sessionsCount > 0 ? kpis.totalCost / sessionsCount : 0;
 
   const empty = !loading && allRows.length === 0;
@@ -124,7 +133,7 @@ export default function OverviewPage() {
         />
         <KpiCard
           label="Sessions"
-          value={(snapshot?.overview?.sessions ?? kpis.totalSessions).toLocaleString()}
+          value={(scopedSnapshot?.overview?.sessions ?? kpis.totalSessions).toLocaleString()}
           icon={Layers}
           accent="cyan"
         />

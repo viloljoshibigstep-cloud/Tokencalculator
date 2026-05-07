@@ -17,6 +17,22 @@ export function rangeToFromDate(range: Range): Date {
   return d;
 }
 
+// Map dashboard range pills to the codeburn `-p` periods we cache snapshots for.
+// codeburn doesn't support an arbitrary 90/365-day window, so 3M/1Y collapse to "all".
+export function rangeToPeriod(range: Range): "today" | "7days" | "30days" | "all" {
+  switch (range) {
+    case "1D":
+      return "today";
+    case "7D":
+      return "7days";
+    case "30D":
+      return "30days";
+    case "3M":
+    case "1Y":
+      return "all";
+  }
+}
+
 export interface UsageRow {
   user_id: string;
   occurred_at: string;
@@ -173,19 +189,30 @@ export interface KpiSummary {
   topProject: string | null;
 }
 
+// When a `snapshot` is passed, token counts and message/session counts come
+// directly from `snapshot.overview` (codeburn's exact totals for that period).
+// Otherwise we fall back to summing the events table (cost is always exact;
+// tokens are proportional and may drift on range-scoped views).
 export function computeKpis(rows: UsageRow[], snapshot?: CodeburnSnapshot | null): KpiSummary {
   const totalCost = rows.reduce((s, r) => s + Number(r.cost_usd), 0);
-  const totalTokens = rows.reduce((s, r) => s + Number(r.total_tokens), 0);
-  const workingTokens = rows.reduce(
-    (s, r) => s + Number(r.input_tokens) + Number(r.output_tokens),
-    0,
-  );
-  const cacheTokens = rows.reduce(
-    (s, r) => s + Number(r.cache_read_tokens) + Number(r.cache_write_tokens),
-    0,
-  );
-  const totalCalls = rows.reduce((s, r) => s + Number(r.calls || 0), 0);
-  const totalSessions = rows.length;
+
+  const ov = snapshot?.overview;
+  const tokens = ov?.tokens;
+  const workingTokens = tokens
+    ? Number(tokens.input ?? 0) + Number(tokens.output ?? 0)
+    : rows.reduce((s, r) => s + Number(r.input_tokens) + Number(r.output_tokens), 0);
+  const cacheTokens = tokens
+    ? Number(tokens.cacheRead ?? 0) + Number(tokens.cacheWrite ?? 0)
+    : rows.reduce(
+        (s, r) => s + Number(r.cache_read_tokens) + Number(r.cache_write_tokens),
+        0,
+      );
+  const totalTokens = workingTokens + cacheTokens;
+
+  const totalCalls = ov?.calls != null
+    ? Number(ov.calls)
+    : rows.reduce((s, r) => s + Number(r.calls || 0), 0);
+  const totalSessions = ov?.sessions != null ? Number(ov.sessions) : rows.length;
   const byProject = new Map<string, number>();
   for (const r of rows) {
     if (r.project) byProject.set(r.project, (byProject.get(r.project) ?? 0) + Number(r.cost_usd));

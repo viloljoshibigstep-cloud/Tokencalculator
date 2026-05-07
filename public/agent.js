@@ -11,7 +11,14 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { spawnSync, execFileSync } = require("child_process");
+const { spawn, spawnSync, execFileSync } = require("child_process");
+
+// Bound concurrent codeburn calls. Each call spawns a node process that
+// reads the local sqlite cache; 8 in flight is plenty without thrashing.
+const CODEBURN_CONCURRENCY = 8;
+// Hard ceiling per call. codeburn usually returns in <5s; if it hangs
+// (corrupt cache, frozen IDE log) we'd rather skip than block the sync.
+const CODEBURN_TIMEOUT_MS = 30000;
 
 const HOME = os.homedir();
 const CFG_DIR = path.join(HOME, ".tokencalc");
@@ -113,24 +120,75 @@ function findCodeburn() {
   return null;
 }
 
-function runCodeburn(cfg, args) {
+function runCodeburn(cfg, args, { timeoutMs = CODEBURN_TIMEOUT_MS } = {}) {
   const bin = cfg.codeburnPath || findCodeburn();
   if (!bin) {
-    throw new Error("codeburn binary not found. Install with: npm install -g codeburn");
-  }
-  const res = spawnSync(bin, args, {
-    encoding: "utf8",
-    maxBuffer: 64 * 1024 * 1024,
-  });
-  if (res.status !== 0) {
-    throw new Error(
-      `codeburn ${args.join(" ")} failed (${res.status}): ${
-        (res.stderr || res.stdout || "").slice(0, 500) || "no output"
-      }`,
+    return Promise.reject(
+      new Error("codeburn binary not found. Install with: npm install -g codeburn"),
     );
   }
-  if (!res.stdout) throw new Error(`codeburn ${args.join(" ")} produced no output`);
-  return JSON.parse(res.stdout);
+  return new Promise((resolve, reject) => {
+    const child = spawn(bin, args, { stdio: ["ignore", "pipe", "pipe"] });
+    const MAX_BUF = 64 * 1024 * 1024;
+    let stdout = "";
+    let stderr = "";
+    let stdoutSize = 0;
+    let stderrSize = 0;
+    let killed = false;
+
+    const timer = setTimeout(() => {
+      killed = true;
+      try {
+        child.kill("SIGKILL");
+      } catch {}
+      reject(new Error(`codeburn ${args.join(" ")} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    child.stdout.on("data", (chunk) => {
+      stdoutSize += chunk.length;
+      if (stdoutSize > MAX_BUF) {
+        killed = true;
+        try {
+          child.kill("SIGKILL");
+        } catch {}
+        clearTimeout(timer);
+        reject(new Error(`codeburn ${args.join(" ")} stdout exceeded ${MAX_BUF} bytes`));
+        return;
+      }
+      stdout += chunk.toString("utf8");
+    });
+    child.stderr.on("data", (chunk) => {
+      stderrSize += chunk.length;
+      if (stderrSize <= MAX_BUF) stderr += chunk.toString("utf8");
+    });
+    child.on("error", (err) => {
+      clearTimeout(timer);
+      if (!killed) reject(err);
+    });
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      if (killed) return;
+      if (code !== 0) {
+        reject(
+          new Error(
+            `codeburn ${args.join(" ")} failed (${code}): ${
+              (stderr || stdout || "").slice(0, 500) || "no output"
+            }`,
+          ),
+        );
+        return;
+      }
+      if (!stdout) {
+        reject(new Error(`codeburn ${args.join(" ")} produced no output`));
+        return;
+      }
+      try {
+        resolve(JSON.parse(stdout));
+      } catch (err) {
+        reject(new Error(`codeburn ${args.join(" ")} JSON parse failed: ${err.message}`));
+      }
+    });
+  });
 }
 
 function fetchProviderReport(cfg, provider, period) {
@@ -150,21 +208,45 @@ function fetchAggregateReport(cfg, period) {
   return runCodeburn(cfg, ["report", "--format", "json", "-p", period]);
 }
 
-// Probe each provider; return only those with cost > 0 in any period.
-function detectProviders(cfg) {
-  const detected = [];
-  for (const p of KNOWN_PROVIDERS) {
-    try {
-      const r = fetchProviderReport(cfg, p, "all");
-      const cost = Number(r?.overview?.cost ?? 0);
-      if (cost > 0) {
-        detected.push({ provider: p, cost });
-        log(`Detected ${p}: $${cost.toFixed(2)}`);
+// Run async `fn(item)` over `items` with at most `limit` in flight.
+// Returns a settled-style array: [{ ok, value }] / [{ ok: false, error }].
+async function pooled(items, limit, fn) {
+  const results = new Array(items.length);
+  let next = 0;
+  async function worker() {
+    while (true) {
+      const i = next++;
+      if (i >= items.length) return;
+      try {
+        results[i] = { ok: true, value: await fn(items[i], i) };
+      } catch (error) {
+        results[i] = { ok: false, error };
       }
-    } catch (err) {
-      // Provider unsupported or no data — skip silently.
     }
   }
+  const workers = Array.from(
+    { length: Math.max(1, Math.min(limit, items.length)) },
+    () => worker(),
+  );
+  await Promise.all(workers);
+  return results;
+}
+
+// Probe each provider; return only those with cost > 0 in any period.
+async function detectProviders(cfg) {
+  const settled = await pooled(KNOWN_PROVIDERS, CODEBURN_CONCURRENCY, (p) =>
+    fetchProviderReport(cfg, p, "all"),
+  );
+  const detected = [];
+  settled.forEach((res, i) => {
+    if (!res.ok) return; // unsupported provider or no data — skip silently
+    const cost = Number(res.value?.overview?.cost ?? 0);
+    if (cost > 0) {
+      const provider = KNOWN_PROVIDERS[i];
+      detected.push({ provider, cost });
+      log(`Detected ${provider}: $${cost.toFixed(2)}`);
+    }
+  });
   return detected;
 }
 
@@ -274,7 +356,7 @@ async function runOnce() {
   log(`Running sync (codeburnPath=${cfg.codeburnPath || "auto"})`);
 
   // 1. Detect which providers have data (one report call per known provider).
-  const detected = detectProviders(cfg);
+  const detected = await detectProviders(cfg);
   if (detected.length === 0) {
     log("No providers with usage data found. Are any AI coding tools installed?");
     // Still report in to /api/ingest so the dashboard knows the agent is alive.
@@ -295,44 +377,57 @@ async function runOnce() {
   const events = [];
   const snapshots = [];
 
+  const providerTasks = [];
   for (const { provider } of detected) {
     for (const period of PERIODS) {
-      try {
-        const report = fetchProviderReport(cfg, provider, period);
-        snapshots.push(compactSnapshot(report, provider, period));
-        if (period === "all") {
-          events.push(...flattenEvents(report, provider));
-        }
-      } catch (err) {
-        log(`Skip ${provider}/${period}: ${err.message}`);
-      }
+      providerTasks.push({ provider, period });
     }
   }
+  const providerResults = await pooled(
+    providerTasks,
+    CODEBURN_CONCURRENCY,
+    ({ provider, period }) => fetchProviderReport(cfg, provider, period),
+  );
+  providerResults.forEach((res, i) => {
+    const { provider, period } = providerTasks[i];
+    if (!res.ok) {
+      log(`Skip ${provider}/${period}: ${res.error.message}`);
+      return;
+    }
+    snapshots.push(compactSnapshot(res.value, provider, period));
+    if (period === "all") {
+      events.push(...flattenEvents(res.value, provider));
+    }
+  });
 
   // 3. Also store an aggregate ("all providers") snapshot per period so the
   //    overview page can show whole-team totals without re-summing per-provider.
-  for (const period of PERIODS) {
-    try {
-      const report = fetchAggregateReport(cfg, period);
-      snapshots.push({
-        provider: "all",
-        period,
-        snapshot: {
-          generated: report.generated || new Date().toISOString(),
-          period: report.periodKey || period,
-          overview: report.overview || null,
-          daily: report.daily || [],
-          projects: report.projects || [],
-          models: report.models || [],
-          activities: report.activities || [],
-          tools: report.tools || [],
-          topSessions: report.topSessions || [],
-        },
-      });
-    } catch (err) {
-      log(`Skip aggregate/${period}: ${err.message}`);
+  const aggregateResults = await pooled(PERIODS, CODEBURN_CONCURRENCY, (period) =>
+    fetchAggregateReport(cfg, period),
+  );
+  aggregateResults.forEach((res, i) => {
+    const period = PERIODS[i];
+    if (!res.ok) {
+      log(`Skip aggregate/${period}: ${res.error.message}`);
+      return;
     }
-  }
+    const report = res.value;
+    snapshots.push({
+      provider: "all",
+      period,
+      snapshot: {
+        generated: report.generated || new Date().toISOString(),
+        period: report.periodKey || period,
+        overview: report.overview || null,
+        daily: report.daily || [],
+        projects: report.projects || [],
+        models: report.models || [],
+        activities: report.activities || [],
+        tools: report.tools || [],
+        topSessions: report.topSessions || [],
+      },
+    });
+  });
 
   log(
     `Prepared ${events.length} events across ${detected.length} provider(s); ${snapshots.length} snapshots`,
