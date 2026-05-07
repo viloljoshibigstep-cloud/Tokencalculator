@@ -154,18 +154,25 @@ function SummaryTile({
   value: string;
   accent: "emerald" | "cyan" | "violet";
 }) {
-  const ring =
+  const dot =
     accent === "emerald"
-      ? "from-emerald-400/20 to-emerald-400/5 text-[var(--ink)]"
+      ? "var(--mint-400)"
       : accent === "cyan"
-        ? "from-cyan-400/20 to-cyan-400/5 text-[var(--tx-hi)]"
-        : "from-violet-400/20 to-violet-400/5 text-[var(--violet-500)]";
+        ? "var(--violet-400)"
+        : "var(--amber-400)";
   return (
-    <div className="glass-card rounded-2xl p-5">
-      <div className="text-[11px] uppercase tracking-wider text-[var(--muted-foreground)]">
+    <div className="card p-5">
+      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--tx-md)" }}>
+        <span
+          className="inline-block size-2 rounded-full"
+          style={{ background: dot }}
+        />
         {label}
       </div>
-      <div className={`mt-2 text-3xl font-semibold tracking-tight bg-gradient-to-br ${ring} bg-clip-text text-transparent`}>
+      <div
+        className="mt-3 text-[34px] font-bold leading-none tracking-[-0.03em]"
+        style={{ color: "var(--ink)" }}
+      >
         {value}
       </div>
     </div>
