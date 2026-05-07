@@ -25,7 +25,7 @@ export function Logo({ className, showText = true }: { className?: string; showT
           className="text-[18px] font-bold tracking-[-0.02em]"
           style={{ color: "var(--ink)" }}
         >
-          Token<span className="gradient-text">Calc</span>
+          Token<span style={{ color: "var(--teal-600)" }}>Calc</span>
         </span>
       )}
     </div>

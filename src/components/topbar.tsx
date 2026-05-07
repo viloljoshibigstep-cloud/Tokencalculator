@@ -58,7 +58,7 @@ export function Topbar({
         {eyebrow && (
           <div
             className="text-[12px] font-semibold uppercase tracking-[0.14em]"
-            style={{ color: "var(--tx-lo)" }}
+            style={{ color: "var(--tx-md)" }}
           >
             {eyebrow}
           </div>

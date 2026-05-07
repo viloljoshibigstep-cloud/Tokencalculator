@@ -19,13 +19,16 @@
   --line:   rgba(20, 24, 26, 0.08);
   --line-2: rgba(20, 24, 26, 0.14);
 
-  /* Text */
+  /* Text — bumped one step darker across the board so muted copy stays
+     readable on both white cards and the sage canvas. The original Halo
+     palette assumes pure white surfaces; we sit on sage which lifts the
+     perceived background, so we compensate by darkening the foreground. */
   --tx-hi:        #14181A;
-  --tx-md:        #5B6260;
-  --tx-lo:        #8A918E;
-  --tx-dim:       #B4BAB6;
+  --tx-md:        #424746;   /* was #5B6260 — body/secondary copy */
+  --tx-lo:        #6B7270;   /* was #8A918E — small captions, axis */
+  --tx-dim:       #8A918E;   /* was #B4BAB6 — placeholders only */
   --tx-on-ink:    #F2F4F1;
-  --tx-on-ink-md: #9CA3A0;
+  --tx-on-ink-md: #B5BCB8;   /* was #9CA3A0 — hint text inside ink card */
 
   /* Brand — mint primary, lavender secondary */
   --mint-300: #C8F7B6;

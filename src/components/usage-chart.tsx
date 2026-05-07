@@ -23,13 +23,13 @@ export function UsageChart({ data }: { data: DailyBucket[] }) {
           </linearGradient>
         </defs>
         <CartesianGrid
-          stroke="rgba(20, 24, 26, 0.06)"
+          stroke="rgba(20, 24, 26, 0.12)"
           strokeDasharray="3 3"
           vertical={false}
         />
         <XAxis
           dataKey="day"
-          stroke="#8A918E"
+          stroke="#5B6260"
           fontSize={11}
           tickLine={false}
           axisLine={false}
@@ -39,7 +39,7 @@ export function UsageChart({ data }: { data: DailyBucket[] }) {
           }}
         />
         <YAxis
-          stroke="#8A918E"
+          stroke="#5B6260"
           fontSize={11}
           tickLine={false}
           axisLine={false}

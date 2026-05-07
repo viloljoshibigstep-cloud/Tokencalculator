@@ -285,11 +285,17 @@ function CodeBlock({ code, locked }: { code: string; locked?: boolean }) {
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-lg border border-[var(--border-strong)] bg-black/40 font-mono",
+        "group relative overflow-hidden rounded-lg font-mono",
         locked && "cursor-not-allowed opacity-60",
       )}
+      style={{ background: "var(--ink)", color: "var(--tx-on-ink)" }}
     >
-      <pre className="overflow-x-auto p-3 pr-12 text-xs text-zinc-200">{code}</pre>
+      <pre
+        className="overflow-x-auto p-3 pr-12 text-xs"
+        style={{ color: "var(--tx-on-ink)" }}
+      >
+        {code}
+      </pre>
       <button
         onClick={copy}
         disabled={locked}

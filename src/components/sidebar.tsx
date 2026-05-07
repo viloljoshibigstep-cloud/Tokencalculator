@@ -78,7 +78,7 @@ export function Sidebar({ user }: SidebarProps) {
             <div key={section.label} className="mb-4">
               <div
                 className="px-3 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em]"
-                style={{ color: "var(--tx-dim)" }}
+                style={{ color: "var(--tx-lo)" }}
               >
                 {section.label}
               </div>
