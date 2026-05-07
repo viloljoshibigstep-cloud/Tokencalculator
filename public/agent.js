@@ -50,7 +50,8 @@ const KNOWN_PROVIDERS = [
 ];
 
 // Periods we cache snapshots for. Frontend selects based on date range.
-const PERIODS = ["today", "7days", "30days", "all"];
+// Names must match codeburn's `-p` accepted values exactly.
+const PERIODS = ["today", "week", "30days", "all"];
 
 function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}\n`;

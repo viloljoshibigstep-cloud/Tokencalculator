@@ -5,29 +5,8 @@ import { Check, Minus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Topbar } from "@/components/topbar";
 import { fetchAllSnapshots, type ProviderSnapshotRow } from "@/lib/queries";
+import { SUPPORTED_TOOLS } from "@/lib/tools";
 import { formatCurrency, formatNumber } from "@/lib/utils";
-
-// Display names + the codeburn provider key so we can join with snapshot rows.
-const SUPPORTED_TOOLS: { key: string; label: string; vendor: string }[] = [
-  { key: "claude", label: "Claude Code", vendor: "Anthropic" },
-  { key: "claude-desktop", label: "Claude Desktop", vendor: "Anthropic" },
-  { key: "codex", label: "Codex", vendor: "OpenAI" },
-  { key: "cursor", label: "Cursor", vendor: "Anysphere" },
-  { key: "cursor-agent", label: "Cursor Agent", vendor: "Anysphere" },
-  { key: "gemini", label: "Gemini CLI", vendor: "Google" },
-  { key: "copilot", label: "GitHub Copilot", vendor: "GitHub" },
-  { key: "antigravity", label: "Antigravity", vendor: "Google" },
-  { key: "kiro", label: "Kiro", vendor: "AWS" },
-  { key: "opencode", label: "OpenCode", vendor: "Open source" },
-  { key: "openclaw", label: "OpenClaw", vendor: "Open source" },
-  { key: "pi", label: "Pi", vendor: "Inflection" },
-  { key: "omp", label: "Oh My Pi", vendor: "Open source" },
-  { key: "droid", label: "Droid", vendor: "Factory" },
-  { key: "roo", label: "Roo Code", vendor: "VS Code" },
-  { key: "kilocode", label: "KiloCode", vendor: "VS Code" },
-  { key: "qwen", label: "Qwen", vendor: "Alibaba" },
-  { key: "goose", label: "Goose", vendor: "Block" },
-];
 
 export default function ToolsPage() {
   const [rows, setRows] = useState<ProviderSnapshotRow[]>([]);

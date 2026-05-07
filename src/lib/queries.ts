@@ -18,13 +18,15 @@ export function rangeToFromDate(range: Range): Date {
 }
 
 // Map dashboard range pills to the codeburn `-p` periods we cache snapshots for.
+// Names must match codeburn's accepted values exactly: today, week, 30days, month, all.
 // codeburn doesn't support an arbitrary 90/365-day window, so 3M/1Y collapse to "all".
-export function rangeToPeriod(range: Range): "today" | "7days" | "30days" | "all" {
+export type CodeburnPeriod = "today" | "week" | "30days" | "all";
+export function rangeToPeriod(range: Range): CodeburnPeriod {
   switch (range) {
     case "1D":
       return "today";
     case "7D":
-      return "7days";
+      return "week";
     case "30D":
       return "30days";
     case "3M":
