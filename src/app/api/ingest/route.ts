@@ -160,6 +160,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
 
+  // Refuse data from disabled accounts. The agent will retry on its 15-min
+  // schedule; nothing is written until the admin re-enables the user.
+  const { data: ownerProfile } = await admin
+    .from("profiles")
+    .select("disabled_at")
+    .eq("id", machine.user_id)
+    .maybeSingle();
+  if (ownerProfile?.disabled_at) {
+    return NextResponse.json({ error: "Account disabled" }, { status: 403 });
+  }
+
   const updates: Record<string, unknown> = { last_seen_at: new Date().toISOString() };
   if (body.hostname && typeof body.hostname === "string") {
     updates.hostname = body.hostname.slice(0, 200);

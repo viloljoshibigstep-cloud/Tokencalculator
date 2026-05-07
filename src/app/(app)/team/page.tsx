@@ -22,7 +22,7 @@ export default async function TeamPage() {
   const admin = createServiceClient();
   const { data: profiles = [] } = await admin
     .from("profiles")
-    .select("id, email, full_name, role, created_at")
+    .select("id, email, full_name, role, created_at, disabled_at")
     .order("created_at");
 
   const since = new Date();
@@ -76,7 +76,7 @@ export default async function TeamPage() {
                   <div className="truncate text-[11px] text-[var(--muted-foreground)]">{p.email}</div>
                 </div>
               </div>
-              <div className="col-span-2">
+              <div className="col-span-2 flex items-center gap-2">
                 <span
                   className={
                     p.role === "admin"
@@ -86,6 +86,14 @@ export default async function TeamPage() {
                 >
                   {p.role}
                 </span>
+                {p.disabled_at && (
+                  <span
+                    className="rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                    style={{ background: "var(--rose-400)", color: "var(--ink)" }}
+                  >
+                    Disabled
+                  </span>
+                )}
               </div>
               <div className="col-span-2 text-right text-[var(--muted-foreground)]">
                 {p.stats.events.toLocaleString()}

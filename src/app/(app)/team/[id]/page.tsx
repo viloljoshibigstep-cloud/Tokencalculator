@@ -14,6 +14,9 @@ import { UsageChart } from "@/components/usage-chart";
 import { bucketByDay, type UsageRow } from "@/lib/queries";
 import { toolLabel } from "@/lib/tools";
 import { formatCurrency, formatNumber } from "@/lib/utils";
+import { AdminControls } from "./admin-controls";
+
+const ADMIN_EMAIL = "vilol.joshi@bigsteptech.com";
 
 interface SnapshotOverview {
   cost?: number;
@@ -45,10 +48,14 @@ export default async function TeamMemberPage({
 
   const { data: profile } = await admin
     .from("profiles")
-    .select("id, email, full_name, role, created_at")
+    .select("id, email, full_name, role, created_at, disabled_at, disabled_reason")
     .eq("id", id)
     .maybeSingle();
   if (!profile) notFound();
+
+  const isAdminEmail = profile.email.toLowerCase() === ADMIN_EMAIL;
+  const isSelf = profile.id === user.id;
+  const isDisabled = !!profile.disabled_at;
 
   // All-time events for this user. Bigstep is small enough that pulling all
   // rows for one person is cheaper than a stats roll-up; revisit if any single
@@ -174,7 +181,16 @@ export default async function TeamMemberPage({
       <Topbar
         title={displayName}
         subtitle={`${profile.email} · ${profile.role} · joined ${joined}`}
-      />
+      >
+        {isDisabled && (
+          <span
+            className="rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider"
+            style={{ background: "var(--rose-400)", color: "var(--ink)" }}
+          >
+            Disabled
+          </span>
+        )}
+      </Topbar>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
@@ -300,6 +316,16 @@ export default async function TeamMemberPage({
           </div>
         </div>
       )}
+
+      <div className="mb-6">
+        <AdminControls
+          userId={profile.id}
+          userEmail={profile.email}
+          isDisabled={isDisabled}
+          isAdminEmail={isAdminEmail}
+          isSelf={isSelf}
+        />
+      </div>
 
       <div className="glass-card rounded-2xl">
         <div className="border-b border-[var(--border)] px-5 py-3">

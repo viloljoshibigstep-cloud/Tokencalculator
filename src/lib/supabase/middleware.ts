@@ -47,6 +47,24 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // If the user is signed in, check whether their profile has been disabled
+  // by an admin. If so, kill the session and bounce to /login with a flag.
+  // Skip this check on public routes (otherwise sign-out itself would loop).
+  if (user && !isPublic) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("disabled_at")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile?.disabled_at) {
+      await supabase.auth.signOut();
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.search = "?error=account_disabled";
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (user && (path === "/login" || path === "/signup")) {
     const url = request.nextUrl.clone();
     url.pathname = "/";

@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button";
 export function LoginForm() {
   const params = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const errFromUrl = params.get("error");
+  const errCode = params.get("error");
+  const errFromUrl =
+    errCode === "account_disabled"
+      ? "Your account has been disabled by an admin. Contact your workspace owner."
+      : errCode;
 
   async function signInWithGoogle() {
     setLoading(true);
