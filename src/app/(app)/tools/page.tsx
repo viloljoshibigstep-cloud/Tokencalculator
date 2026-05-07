@@ -1,0 +1,194 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Check, Minus } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { Topbar } from "@/components/topbar";
+import { fetchAllSnapshots, type ProviderSnapshotRow } from "@/lib/queries";
+import { formatCurrency, formatNumber } from "@/lib/utils";
+
+// Display names + the codeburn provider key so we can join with snapshot rows.
+const SUPPORTED_TOOLS: { key: string; label: string; vendor: string }[] = [
+  { key: "claude", label: "Claude Code", vendor: "Anthropic" },
+  { key: "claude-desktop", label: "Claude Desktop", vendor: "Anthropic" },
+  { key: "codex", label: "Codex", vendor: "OpenAI" },
+  { key: "cursor", label: "Cursor", vendor: "Anysphere" },
+  { key: "cursor-agent", label: "Cursor Agent", vendor: "Anysphere" },
+  { key: "gemini", label: "Gemini CLI", vendor: "Google" },
+  { key: "copilot", label: "GitHub Copilot", vendor: "GitHub" },
+  { key: "antigravity", label: "Antigravity", vendor: "Google" },
+  { key: "kiro", label: "Kiro", vendor: "AWS" },
+  { key: "opencode", label: "OpenCode", vendor: "Open source" },
+  { key: "openclaw", label: "OpenClaw", vendor: "Open source" },
+  { key: "pi", label: "Pi", vendor: "Inflection" },
+  { key: "omp", label: "Oh My Pi", vendor: "Open source" },
+  { key: "droid", label: "Droid", vendor: "Factory" },
+  { key: "roo", label: "Roo Code", vendor: "VS Code" },
+  { key: "kilocode", label: "KiloCode", vendor: "VS Code" },
+  { key: "qwen", label: "Qwen", vendor: "Alibaba" },
+  { key: "goose", label: "Goose", vendor: "Block" },
+];
+
+export default function ToolsPage() {
+  const [rows, setRows] = useState<ProviderSnapshotRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+    fetchAllSnapshots(supabase)
+      .then(setRows)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const byProvider = useMemo(() => {
+    const map = new Map<string, ProviderSnapshotRow>();
+    for (const r of rows) {
+      if (r.period !== "all") continue;
+      if (r.provider === "all") continue;
+      if (!map.has(r.provider)) map.set(r.provider, r);
+    }
+    return map;
+  }, [rows]);
+
+  const totalCost = SUPPORTED_TOOLS.reduce((s, t) => {
+    const snap = byProvider.get(t.key);
+    return s + Number(snap?.snapshot?.overview?.cost ?? 0);
+  }, 0);
+
+  const detectedCount = SUPPORTED_TOOLS.filter((t) => byProvider.has(t.key)).length;
+
+  return (
+    <>
+      <Topbar
+        title="Tools / IDEs"
+        subtitle={`${detectedCount} of ${SUPPORTED_TOOLS.length} supported tools detected on your machines`}
+      />
+
+      <div className="mb-5 grid gap-4 sm:grid-cols-3">
+        <SummaryTile label="Detected" value={String(detectedCount)} accent="emerald" />
+        <SummaryTile label="Supported" value={String(SUPPORTED_TOOLS.length)} accent="cyan" />
+        <SummaryTile label="All-time spend" value={formatCurrency(totalCost)} accent="violet" />
+      </div>
+
+      <div className="glass-card rounded-2xl">
+        <div className="grid grid-cols-12 gap-3 border-b border-[var(--border)] px-5 py-3 text-[11px] font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
+          <div className="col-span-1"></div>
+          <div className="col-span-3">Tool</div>
+          <div className="col-span-2">Vendor</div>
+          <div className="col-span-1 text-right">Sessions</div>
+          <div className="col-span-2 text-right">Messages</div>
+          <div className="col-span-1 text-right">Tokens</div>
+          <div className="col-span-2 text-right">Cost</div>
+        </div>
+
+        {loading ? (
+          <div className="p-8 text-center text-sm text-[var(--muted-foreground)]">Loading…</div>
+        ) : (
+          <div className="divide-y divide-[var(--border)]">
+            {SUPPORTED_TOOLS.slice()
+              .sort((a, b) => {
+                const aCost = Number(byProvider.get(a.key)?.snapshot?.overview?.cost ?? 0);
+                const bCost = Number(byProvider.get(b.key)?.snapshot?.overview?.cost ?? 0);
+                return bCost - aCost;
+              })
+              .map((t) => {
+                const snap = byProvider.get(t.key);
+                const detected = !!snap;
+                const ov = snap?.snapshot?.overview;
+                const cost = Number(ov?.cost ?? 0);
+                const sessions = Number(ov?.sessions ?? 0);
+                const calls = Number(ov?.calls ?? 0);
+                const tokens = ov?.tokens
+                  ? Number(ov.tokens.input ?? 0) +
+                    Number(ov.tokens.output ?? 0) +
+                    Number(ov.tokens.cacheRead ?? 0) +
+                    Number(ov.tokens.cacheWrite ?? 0)
+                  : 0;
+                const pct = totalCost > 0 ? (cost / totalCost) * 100 : 0;
+
+                return (
+                  <div
+                    key={t.key}
+                    className="relative grid grid-cols-12 items-center gap-3 px-5 py-3.5 text-sm"
+                  >
+                    {detected && cost > 0 && (
+                      <div
+                        className="pointer-events-none absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500/8 to-transparent"
+                        style={{ width: `${Math.min(100, pct)}%` }}
+                      />
+                    )}
+                    <div className="relative col-span-1">
+                      {detected ? (
+                        <span className="inline-flex size-6 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-300">
+                          <Check className="size-3.5" />
+                        </span>
+                      ) : (
+                        <span className="inline-flex size-6 items-center justify-center rounded-md bg-[var(--muted)] text-[var(--muted-foreground)]">
+                          <Minus className="size-3.5" />
+                        </span>
+                      )}
+                    </div>
+                    <div className="relative col-span-3">
+                      <div className="font-medium text-white">{t.label}</div>
+                      <div className="text-[11px] text-[var(--muted-foreground)]">
+                        {detected ? "Active" : "Not detected"}
+                      </div>
+                    </div>
+                    <div className="relative col-span-2 text-[var(--muted-foreground)]">
+                      {t.vendor}
+                    </div>
+                    <div className="relative col-span-1 text-right text-[var(--muted-foreground)]">
+                      {detected ? sessions.toLocaleString() : "—"}
+                    </div>
+                    <div className="relative col-span-2 text-right text-[var(--muted-foreground)]">
+                      {detected ? calls.toLocaleString() : "—"}
+                    </div>
+                    <div className="relative col-span-1 text-right text-[var(--muted-foreground)] text-[11px]">
+                      {detected ? formatNumber(tokens) : "—"}
+                    </div>
+                    <div className="relative col-span-2 text-right font-semibold text-white">
+                      {detected ? formatCurrency(cost) : "—"}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        )}
+      </div>
+
+      <p className="mt-4 text-[11px] text-[var(--muted-foreground)]">
+        Detection runs every 15 minutes via the local agent. A tool shows as
+        &quot;Active&quot; once codeburn finds session data on disk for it. Tokens are
+        summed across input + output + cache. Cost matches codeburn&apos;s pricing
+        engine (LiteLLM).
+      </p>
+    </>
+  );
+}
+
+function SummaryTile({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent: "emerald" | "cyan" | "violet";
+}) {
+  const ring =
+    accent === "emerald"
+      ? "from-emerald-400/20 to-emerald-400/5 text-emerald-300"
+      : accent === "cyan"
+        ? "from-cyan-400/20 to-cyan-400/5 text-cyan-300"
+        : "from-violet-400/20 to-violet-400/5 text-violet-300";
+  return (
+    <div className="glass-card rounded-2xl p-5">
+      <div className="text-[11px] uppercase tracking-wider text-[var(--muted-foreground)]">
+        {label}
+      </div>
+      <div className={`mt-2 text-3xl font-semibold tracking-tight bg-gradient-to-br ${ring} bg-clip-text text-transparent`}>
+        {value}
+      </div>
+    </div>
+  );
+}
