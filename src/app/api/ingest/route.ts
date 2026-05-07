@@ -57,6 +57,57 @@ function nonNegFloat(v: unknown): number {
   return n;
 }
 
+// Stream the body, count bytes, and abort the read if it crosses `max`.
+// Content-Length is advisory — a malicious agent can lie about it — so we
+// must enforce on the actual byte count, not the header.
+type ReadResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; status: number; error: string };
+
+async function readJsonWithLimit<T>(
+  req: NextRequest,
+  max: number,
+): Promise<ReadResult<T>> {
+  const reader = req.body?.getReader();
+  if (!reader) return { ok: false, status: 400, error: "Missing request body" };
+
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    if (!value) continue;
+    total += value.byteLength;
+    if (total > max) {
+      try {
+        await reader.cancel();
+      } catch {}
+      return { ok: false, status: 413, error: "Payload too large" };
+    }
+    chunks.push(value);
+  }
+
+  const merged = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  let text: string;
+  try {
+    text = new TextDecoder("utf-8", { fatal: true }).decode(merged);
+  } catch {
+    return { ok: false, status: 400, error: "Invalid UTF-8 in body" };
+  }
+
+  try {
+    return { ok: true, value: JSON.parse(text) as T };
+  } catch {
+    return { ok: false, status: 400, error: "Invalid JSON" };
+  }
+}
+
 export async function POST(req: NextRequest) {
   const auth = req.headers.get("authorization") || "";
   const token = auth.toLowerCase().startsWith("bearer ")
@@ -67,18 +118,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing or malformed bearer token" }, { status: 401 });
   }
 
-  // Cheap body-size guard before parse (Next/Edge may not enforce per-route).
+  // Fast-path: trust an honestly-declared too-large Content-Length to avoid
+  // reading any bytes. This is a hint only — the streaming read below is
+  // what actually enforces the byte cap, since the header is advisory.
   const lenHeader = Number(req.headers.get("content-length") || 0);
-  if (lenHeader > MAX_BODY_BYTES) {
+  if (Number.isFinite(lenHeader) && lenHeader > MAX_BODY_BYTES) {
     return NextResponse.json({ error: "Payload too large" }, { status: 413 });
   }
 
-  let body: IngestPayload;
-  try {
-    body = (await req.json()) as IngestPayload;
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  const parsed = await readJsonWithLimit<IngestPayload>(req, MAX_BODY_BYTES);
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: parsed.status });
   }
+  const body = parsed.value;
 
   if (!body || !Array.isArray(body.events)) {
     return NextResponse.json({ error: "Missing events[]" }, { status: 400 });
