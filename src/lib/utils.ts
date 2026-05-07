@@ -14,9 +14,16 @@ export function formatCurrency(value: number, fractionDigits = 2): string {
   }).format(value);
 }
 
+// Compact KPI formatter: 2_008_170_000 → "2.01B", 1_020_000 → "1.02M".
+// Drops trailing zeros so 1_000_000 renders as "1M" not "1.00M" — keeps
+// the KPI cell narrow.
 export function formatNumber(value: number): string {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  const abs = Math.abs(value);
+  const trim = (n: number) => n.toFixed(2).replace(/\.?0+$/, "");
+  if (abs >= 1_000_000_000_000) return `${trim(value / 1_000_000_000_000)}T`;
+  if (abs >= 1_000_000_000) return `${trim(value / 1_000_000_000)}B`;
+  if (abs >= 1_000_000) return `${trim(value / 1_000_000)}M`;
+  if (abs >= 1_000) return `${trim(value / 1_000)}K`;
   return value.toLocaleString();
 }
 
