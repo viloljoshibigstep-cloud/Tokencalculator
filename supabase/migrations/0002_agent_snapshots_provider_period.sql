@@ -15,12 +15,16 @@ alter table public.agent_snapshots
 -- 2. Keep only the latest snapshot per (machine_id, provider, period).
 --    Without this, the next step's unique index would fail on duplicates
 --    that pre-date the new columns (everything used to default to 'all').
+--    `taken_at < taken_at OR (taken_at = ... AND ctid < ctid)` covers
+--    the case where two rows share a millisecond — neither would lose
+--    under a strict `<` and the unique constraint would then fail.
 delete from public.agent_snapshots a
 using public.agent_snapshots b
 where a.machine_id = b.machine_id
   and a.provider   = b.provider
   and a.period     = b.period
-  and a.taken_at   < b.taken_at;
+  and (a.taken_at < b.taken_at
+       or (a.taken_at = b.taken_at and a.ctid < b.ctid));
 
 -- 3. One row per (machine, provider, period). Drop the old name first in
 --    case a partial migration left it around.
