@@ -63,11 +63,11 @@ export default function ProjectsPage() {
                   className="relative grid grid-cols-12 items-center gap-3 px-5 py-4 text-sm"
                 >
                   <div
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500/8 to-transparent"
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[rgba(166,242,145,0.18)] to-transparent"
                     style={{ width: `${Math.min(100, pct)}%` }}
                   />
                   <div className="relative col-span-5 min-w-0">
-                    <div className="truncate font-medium text-white">{niceName}</div>
+                    <div className="truncate font-medium text-[var(--tx-hi)]">{niceName}</div>
                     <div className="truncate text-[11px] text-[var(--muted-foreground)]">
                       {p.path}
                     </div>
@@ -81,7 +81,7 @@ export default function ProjectsPage() {
                   <div className="relative col-span-2 text-right text-[var(--muted-foreground)] text-[11px]">
                     {formatCurrency(p.avgCostPerSession ?? p.cost / Math.max(1, p.sessions))}
                   </div>
-                  <div className="relative col-span-1 text-right font-semibold text-white">
+                  <div className="relative col-span-1 text-right font-semibold text-[var(--tx-hi)]">
                     {formatCurrency(p.cost)}
                   </div>
                 </div>

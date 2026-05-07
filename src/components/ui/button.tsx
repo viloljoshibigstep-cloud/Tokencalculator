@@ -27,7 +27,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ghost:
         "bg-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--card)]",
       danger:
-        "bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20",
+        "bg-[rgba(217,76,92,0.08)] border border-[rgba(217,76,92,0.3)] text-[#B5374A] hover:bg-[rgba(217,76,92,0.16)]",
     };
     return (
       <button

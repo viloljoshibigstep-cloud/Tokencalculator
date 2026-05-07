@@ -165,7 +165,7 @@ export default async function TeamMemberPage({
     <>
       <Link
         href="/team"
-        className="mb-4 inline-flex items-center gap-1.5 text-xs text-[var(--muted-foreground)] transition-colors hover:text-white"
+        className="mb-4 inline-flex items-center gap-1.5 text-xs text-[var(--muted-foreground)] transition-colors hover:text-[var(--tx-hi)]"
       >
         <ArrowLeft className="size-3.5" />
         Back to Team
@@ -205,7 +205,7 @@ export default async function TeamMemberPage({
 
       <div className="glass-card mb-6 rounded-2xl p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-medium text-white">Daily spend (last 30 days)</h2>
+          <h2 className="text-sm font-medium text-[var(--tx-hi)]">Daily spend (last 30 days)</h2>
           <span className="text-xs text-[var(--muted-foreground)]">
             {events30.length} events
           </span>
@@ -226,8 +226,8 @@ export default async function TeamMemberPage({
 
       <div className="glass-card mb-6 rounded-2xl">
         <div className="border-b border-[var(--border)] px-5 py-3">
-          <h2 className="flex items-center gap-2 text-sm font-medium text-white">
-            <Wrench className="size-4 text-cyan-300" />
+          <h2 className="flex items-center gap-2 text-sm font-medium text-[var(--tx-hi)]">
+            <Wrench className="size-4 text-[var(--tx-hi)]" />
             Tools / IDEs used by {displayName}
           </h2>
           <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">
@@ -254,14 +254,14 @@ export default async function TeamMemberPage({
                     key={t.provider}
                     className="grid grid-cols-12 items-center gap-3 px-5 py-3 text-sm"
                   >
-                    <div className="col-span-4 truncate font-medium text-white">{meta.label}</div>
+                    <div className="col-span-4 truncate font-medium text-[var(--tx-hi)]">{meta.label}</div>
                     <div className="col-span-3 truncate text-[var(--muted-foreground)]">
                       {meta.vendor}
                     </div>
                     <div className="col-span-2 text-right text-[var(--muted-foreground)]">
                       {t.sessions ? t.sessions.toLocaleString() : "—"}
                     </div>
-                    <div className="col-span-3 text-right font-semibold text-white">
+                    <div className="col-span-3 text-right font-semibold text-[var(--tx-hi)]">
                       {formatCurrency(t.cost)}
                     </div>
                   </div>
@@ -275,7 +275,7 @@ export default async function TeamMemberPage({
       {machines.length > 0 && (
         <div className="glass-card mb-6 rounded-2xl">
           <div className="border-b border-[var(--border)] px-5 py-3">
-            <h2 className="text-sm font-medium text-white">Machines</h2>
+            <h2 className="text-sm font-medium text-[var(--tx-hi)]">Machines</h2>
           </div>
           <div className="divide-y divide-[var(--border)]">
             {machines.map((m, i) => (
@@ -284,7 +284,7 @@ export default async function TeamMemberPage({
                 className="flex items-center justify-between px-5 py-3 text-sm"
               >
                 <div>
-                  <div className="font-medium text-white">{m.hostname}</div>
+                  <div className="font-medium text-[var(--tx-hi)]">{m.hostname}</div>
                   <div className="text-[11px] text-[var(--muted-foreground)]">
                     {m.platform || "unknown platform"}
                   </div>
@@ -303,7 +303,7 @@ export default async function TeamMemberPage({
 
       <div className="glass-card rounded-2xl">
         <div className="border-b border-[var(--border)] px-5 py-3">
-          <h2 className="text-sm font-medium text-white">Recent activity</h2>
+          <h2 className="text-sm font-medium text-[var(--tx-hi)]">Recent activity</h2>
         </div>
         {recent.length === 0 ? (
           <div className="p-8 text-center text-sm text-[var(--muted-foreground)]">
@@ -319,7 +319,7 @@ export default async function TeamMemberPage({
                 <div className="col-span-3 text-[var(--muted-foreground)]">
                   {new Date(e.occurred_at).toLocaleString()}
                 </div>
-                <div className="col-span-3 truncate text-white">
+                <div className="col-span-3 truncate text-[var(--tx-hi)]">
                   {toolLabel(e.provider).label}
                 </div>
                 <div className="col-span-3 truncate text-[var(--muted-foreground)]">
@@ -328,7 +328,7 @@ export default async function TeamMemberPage({
                 <div className="col-span-1 text-right text-[var(--muted-foreground)]">
                   {formatNumber(e.total_tokens)}
                 </div>
-                <div className="col-span-2 text-right font-semibold text-white">
+                <div className="col-span-2 text-right font-semibold text-[var(--tx-hi)]">
                   {formatCurrency(Number(e.cost_usd))}
                 </div>
               </div>
@@ -353,7 +353,7 @@ function BreakdownCard({
   return (
     <div className="glass-card rounded-2xl">
       <div className="border-b border-[var(--border)] px-5 py-3">
-        <h2 className="text-sm font-medium text-white">{title}</h2>
+        <h2 className="text-sm font-medium text-[var(--tx-hi)]">{title}</h2>
       </div>
       {rows.length === 0 ? (
         <div className="p-8 text-center text-sm text-[var(--muted-foreground)]">{emptyLabel}</div>
@@ -367,14 +367,14 @@ function BreakdownCard({
                 className="relative grid grid-cols-12 items-center gap-3 px-5 py-3 text-sm"
               >
                 <div
-                  className="pointer-events-none absolute inset-y-0 left-0 bg-gradient-to-r from-cyan-400/8 to-transparent"
+                  className="pointer-events-none absolute inset-y-0 left-0 bg-gradient-to-r from-[rgba(166,242,145,0.18)] to-transparent"
                   style={{ width: `${Math.min(100, pct)}%` }}
                 />
-                <div className="relative col-span-7 truncate font-medium text-white">{r.key}</div>
+                <div className="relative col-span-7 truncate font-medium text-[var(--tx-hi)]">{r.key}</div>
                 <div className="relative col-span-2 text-right text-[var(--muted-foreground)]">
                   {formatNumber(r.tokens)}
                 </div>
-                <div className="relative col-span-3 text-right font-semibold text-white">
+                <div className="relative col-span-3 text-right font-semibold text-[var(--tx-hi)]">
                   {formatCurrency(r.cost)}
                 </div>
               </div>

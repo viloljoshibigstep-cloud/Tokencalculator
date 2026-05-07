@@ -65,7 +65,7 @@ export default function ModelsPage() {
                     style={{ width: `${Math.min(100, pct)}%` }}
                   />
                   <div className="relative col-span-3">
-                    <div className="font-medium text-white">{m.name}</div>
+                    <div className="font-medium text-[var(--tx-hi)]">{m.name}</div>
                     <div className="text-[11px] text-[var(--muted-foreground)]">
                       {pct.toFixed(1)}% of spend
                     </div>
@@ -82,7 +82,7 @@ export default function ModelsPage() {
                   <div className="relative col-span-2 text-right text-[var(--muted-foreground)] text-[11px]">
                     {formatNumber(m.cacheReadTokens)} / {formatNumber(m.cacheWriteTokens)}
                   </div>
-                  <div className="relative col-span-2 text-right font-semibold text-white">
+                  <div className="relative col-span-2 text-right font-semibold text-[var(--tx-hi)]">
                     {formatCurrency(m.cost)}
                   </div>
                 </div>

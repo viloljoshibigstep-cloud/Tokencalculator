@@ -1,50 +1,114 @@
 @import "tailwindcss";
 
+/* ============================================================
+   TOKENCALC — DESIGN TOKENS
+   Halo-Lab inspired: sage canvas + mint accent + ink hero cards.
+   Don't hardcode hex; use these custom properties everywhere.
+   ============================================================ */
 :root {
-  --background: #050a0e;
-  --foreground: #f4f4f5;
-  --card: #0c151c;
-  --card-elevated: #111c25;
-  --border: rgba(34, 211, 238, 0.08);
-  --border-strong: rgba(34, 211, 238, 0.18);
-  --muted: #1a2530;
-  --muted-foreground: #94a3b8;
-  --accent-from: #34d399;
-  --accent-to: #22d3ee;
-  --danger: #f87171;
-  --success: #34d399;
+  /* Surfaces */
+  --bg-000: #DCE6D8;        /* canvas — sage */
+  --bg-050: #E8EFE4;        /* sidebar — paler sage */
+  --bg-100: #FFFFFF;        /* card base — white */
+  --bg-200: #F3F6F1;        /* raised / inputs */
+  --bg-300: #E2EADD;        /* hover */
+  --ink:    #14181A;        /* primary ink card / text on light */
+  --ink-2:  #1F2426;        /* secondary ink */
+
+  /* Lines */
+  --line:   rgba(20, 24, 26, 0.08);
+  --line-2: rgba(20, 24, 26, 0.14);
+
+  /* Text */
+  --tx-hi:        #14181A;
+  --tx-md:        #5B6260;
+  --tx-lo:        #8A918E;
+  --tx-dim:       #B4BAB6;
+  --tx-on-ink:    #F2F4F1;
+  --tx-on-ink-md: #9CA3A0;
+
+  /* Brand — mint primary, lavender secondary */
+  --mint-300: #C8F7B6;
+  --mint-400: #A6F291;
+  --mint-500: #7FE066;
+  --teal-500: #5BC747;
+  --teal-600: #3DA62E;
+
+  /* Secondary accents */
+  --violet-400: #C8B8FF;
+  --violet-500: #A491F7;
+  --amber-400:  #F2D49A;
+  --rose-400:   #F2A4B0;
+
+  /* Brand gradient */
+  --grad-brand:        linear-gradient(135deg, #C8F7B6 0%, #A6F291 100%);
+  --grad-brand-soft:   linear-gradient(135deg, rgba(166, 242, 145, 0.30), rgba(166, 242, 145, 0.10));
+  --grad-violet-soft:  linear-gradient(135deg, rgba(200, 184, 255, 0.40), rgba(164, 145, 247, 0.10));
+  --grad-amber-soft:   linear-gradient(135deg, rgba(242, 212, 154, 0.40), rgba(242, 164, 176, 0.10));
+
+  /* Radii */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 12px 32px -16px rgba(20, 24, 26, 0.18);
+  --shadow-ink:  0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 18px 40px -20px rgba(20, 24, 26, 0.5);
+  --glow-mint:   0 0 0 1px rgba(166, 242, 145, 0.4), 0 18px 40px -16px rgba(127, 224, 102, 0.35);
+
+  /* Type */
+  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  /* Compatibility shims for components written against the previous theme.
+     Map old tokens to new equivalents so we don't have to touch every file. */
+  --background:        var(--bg-000);
+  --foreground:        var(--tx-hi);
+  --card:              var(--bg-100);
+  --card-elevated:     var(--bg-200);
+  --border:            var(--line);
+  --border-strong:     var(--line-2);
+  --muted:             var(--bg-200);
+  --muted-foreground:  var(--tx-md);
+  --accent-from:       var(--mint-300);
+  --accent-to:         var(--mint-400);
+  --danger:            #D94C5C;
+  --success:           var(--teal-500);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-elevated: var(--card-elevated);
-  --color-border: var(--border);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background:        var(--background);
+  --color-foreground:        var(--foreground);
+  --color-card:              var(--card);
+  --color-card-elevated:     var(--card-elevated);
+  --color-border:            var(--border);
+  --color-muted:             var(--muted);
+  --color-muted-foreground:  var(--muted-foreground);
+  --font-sans:               var(--font-display);
+  --font-mono:               var(--font-mono);
 }
 
 * {
-  border-color: var(--border);
+  border-color: var(--line);
 }
 
 html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-000);
+  color: var(--tx-hi);
+  font-family: var(--font-display), -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Soft radial wash on the canvas — mint top-right, violet bottom-right */
 body {
   background-image:
-    radial-gradient(circle at 0% 0%, rgba(34, 211, 238, 0.06) 0%, transparent 35%),
-    radial-gradient(circle at 100% 0%, rgba(52, 211, 153, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 50% 100%, rgba(34, 211, 238, 0.03) 0%, transparent 50%);
+    radial-gradient(900px 600px at 80% -10%, rgba(166, 242, 145, 0.25), transparent 60%),
+    radial-gradient(700px 500px at 100% 100%, rgba(200, 184, 255, 0.18), transparent 60%);
   background-attachment: fixed;
 }
 
@@ -56,31 +120,46 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.15);
+  background: rgba(20, 24, 26, 0.12);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.3);
+  background: rgba(20, 24, 26, 0.25);
 }
 
+/* ============================================================
+   CARDS — light variant (default) and ink variant (dark hero)
+   .glass-card kept as alias for backwards compatibility.
+   ============================================================ */
+.card,
 .glass-card {
-  background:
-    linear-gradient(135deg, rgba(34, 211, 238, 0.04) 0%, rgba(52, 211, 153, 0.02) 100%),
-    var(--card);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(12px);
+  background: var(--bg-100);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
 }
 
 .glass-card-strong {
-  background:
-    linear-gradient(135deg, rgba(34, 211, 238, 0.08) 0%, rgba(52, 211, 153, 0.04) 100%),
-    var(--card-elevated);
-  border: 1px solid var(--border-strong);
-  backdrop-filter: blur(12px);
+  background: var(--bg-100);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-card);
 }
 
+.card-ink,
+.glass-card-ink {
+  background: var(--ink);
+  color: var(--tx-on-ink);
+  border: 0;
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-ink);
+}
+
+/* ============================================================
+   GRADIENTS — text and backgrounds
+   ============================================================ */
 .gradient-text {
-  background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
+  background: var(--grad-brand);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -88,34 +167,50 @@ body {
 }
 
 .gradient-bg {
-  background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
+  background: var(--grad-brand);
+  color: var(--ink);
 }
 
-.glow-emerald {
-  box-shadow: 0 0 40px -10px rgba(52, 211, 153, 0.4);
-}
+.gradient-violet-soft { background: var(--grad-violet-soft); }
+.gradient-amber-soft  { background: var(--grad-amber-soft); }
+.gradient-mint-soft   { background: var(--grad-brand-soft); }
 
-.glow-cyan {
-  box-shadow: 0 0 40px -10px rgba(34, 211, 238, 0.4);
-}
+.glow-mint    { box-shadow: var(--glow-mint); }
+.glow-emerald { box-shadow: 0 0 40px -10px rgba(127, 224, 102, 0.45); }
+.glow-cyan    { box-shadow: 0 0 40px -10px rgba(200, 184, 255, 0.45); }
 
+/* ============================================================
+   FORMS
+   ============================================================ */
 input,
 textarea,
 select {
-  background: var(--card);
-  border: 1px solid var(--border-strong);
-  color: var(--foreground);
+  background: var(--bg-100);
+  border: 1px solid var(--line-2);
+  color: var(--tx-hi);
+  border-radius: var(--r-sm);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--tx-lo);
 }
 
 input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: var(--accent-to);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
+  border-color: var(--mint-500);
+  box-shadow: 0 0 0 3px rgba(127, 224, 102, 0.2);
 }
 
 button:focus-visible {
-  outline: 2px solid var(--accent-to);
+  outline: 2px solid var(--mint-500);
   outline-offset: 2px;
 }
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+.font-mono { font-family: var(--font-mono); }
+.font-display { font-family: var(--font-display); }

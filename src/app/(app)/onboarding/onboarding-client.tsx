@@ -140,14 +140,14 @@ export function OnboardingClient() {
               </Button>
             </div>
             {error && (
-              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
+              <div className="rounded-lg border border-[rgba(217,76,92,0.3)] bg-[rgba(217,76,92,0.08)] p-3 text-xs text-[#B5374A]">
                 {error}
               </div>
             )}
           </div>
         ) : (
           <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">
-            <div className="flex items-center gap-2 text-emerald-300">
+            <div className="flex items-center gap-2 text-[var(--ink)]">
               <Check className="size-4" />
               Registered as <strong>{machine.name}</strong>
             </div>
@@ -179,12 +179,12 @@ export function OnboardingClient() {
           locked={!machine}
         />
         <details className="mt-3 text-xs text-[var(--muted-foreground)]">
-          <summary className="cursor-pointer hover:text-white">What does this do?</summary>
+          <summary className="cursor-pointer hover:text-[var(--tx-hi)]">What does this do?</summary>
           <ul className="mt-2 list-disc space-y-1 pl-5">
-            <li>Installs <code className="text-cyan-300">codeburn</code> globally if missing.</li>
-            <li>Drops a small agent script at <code className="text-cyan-300">~/.tokencalc/agent.js</code> and schedules it (launchd on macOS, cron on Linux) every 15 min.</li>
+            <li>Installs <code className="text-[var(--tx-hi)]">codeburn</code> globally if missing.</li>
+            <li>Drops a small agent script at <code className="text-[var(--tx-hi)]">~/.tokencalc/agent.js</code> and schedules it (launchd on macOS, cron on Linux) every 15 min.</li>
             <li>Sends only token counts, model names, project paths and timestamps. Never prompts or code.</li>
-            <li>Uninstall: <code className="text-cyan-300">node ~/.tokencalc/agent.js uninstall</code></li>
+            <li>Uninstall: <code className="text-[var(--tx-hi)]">node ~/.tokencalc/agent.js uninstall</code></li>
           </ul>
         </details>
       </Step>
@@ -199,7 +199,7 @@ export function OnboardingClient() {
       >
         {agentSeen ? (
           <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4 text-sm">
-            <div className="flex items-center gap-2 text-emerald-300">
+            <div className="flex items-center gap-2 text-[var(--ink)]">
               <Check className="size-4" />
               Agent connected. Your usage will appear in the Overview within a few minutes.
             </div>
@@ -256,7 +256,7 @@ function Step({
           className={cn(
             "flex size-9 items-center justify-center rounded-lg text-sm font-semibold",
             done
-              ? "bg-emerald-500/15 text-emerald-300"
+              ? "bg-[var(--bg-300)] text-[var(--ink)]"
               : active
                 ? "gradient-bg text-black"
                 : "bg-[var(--card-elevated)] text-[var(--muted-foreground)]",
@@ -266,7 +266,7 @@ function Step({
         </div>
         <div className="flex flex-1 items-center gap-2">
           <Icon className="size-4 text-[var(--muted-foreground)]" />
-          <h3 className="text-base font-semibold text-white">{title}</h3>
+          <h3 className="text-base font-semibold text-[var(--tx-hi)]">{title}</h3>
         </div>
       </div>
       <div className="pl-12">{children}</div>
@@ -293,7 +293,7 @@ function CodeBlock({ code, locked }: { code: string; locked?: boolean }) {
       <button
         onClick={copy}
         disabled={locked}
-        className="absolute right-2 top-2 rounded-md bg-[var(--card)] p-1.5 text-[var(--muted-foreground)] opacity-0 transition-all hover:text-white group-hover:opacity-100"
+        className="absolute right-2 top-2 rounded-md bg-[var(--card)] p-1.5 text-[var(--muted-foreground)] opacity-0 transition-all hover:text-[var(--tx-hi)] group-hover:opacity-100"
       >
         {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
       </button>

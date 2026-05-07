@@ -6,45 +6,63 @@ interface KpiCardProps {
   value: string;
   icon: LucideIcon;
   delta?: { value: string; positive: boolean };
-  accent?: "cyan" | "emerald" | "violet";
+  /**
+   * cyan/emerald/violet kept as alias names for compatibility with existing
+   * page code. The new design uses mint/violet/amber/rose tints — we map old
+   * accent names to the closest new colour.
+   */
+  accent?: "cyan" | "emerald" | "violet" | "mint" | "amber" | "rose";
 }
 
-const accents = {
-  cyan: "from-cyan-400/20 to-cyan-400/5 text-cyan-300",
-  emerald: "from-emerald-400/20 to-emerald-400/5 text-emerald-300",
-  violet: "from-violet-400/20 to-violet-400/5 text-violet-300",
+const ACCENT_BG: Record<NonNullable<KpiCardProps["accent"]>, string> = {
+  cyan: "var(--mint-400)",
+  emerald: "var(--mint-400)",
+  mint: "var(--mint-400)",
+  violet: "var(--violet-400)",
+  amber: "var(--amber-400)",
+  rose: "var(--rose-400)",
 };
 
-export function KpiCard({ label, value, icon: Icon, delta, accent = "cyan" }: KpiCardProps) {
+export function KpiCard({ label, value, icon: Icon, delta, accent = "mint" }: KpiCardProps) {
+  const tint = ACCENT_BG[accent];
   return (
-    <div className="glass-card relative overflow-hidden rounded-2xl p-5">
-      <div className="flex items-start justify-between gap-4">
+    <div className="card relative flex min-h-[154px] flex-col justify-between overflow-hidden p-5">
+      <div className="flex items-start justify-between gap-3">
         <div
-          className={cn(
-            "flex size-10 items-center justify-center rounded-xl bg-gradient-to-br",
-            accents[accent],
-          )}
+          className="grid size-[42px] place-items-center rounded-xl"
+          style={{ background: tint, color: "var(--ink)" }}
         >
           <Icon className="size-5" />
         </div>
         {delta && (
           <span
             className={cn(
-              "rounded-md px-2 py-0.5 text-[11px] font-medium",
-              delta.positive
-                ? "bg-emerald-500/10 text-emerald-300"
-                : "bg-red-500/10 text-red-300",
+              "rounded-full px-2.5 py-1 text-[11px] font-bold",
             )}
+            style={
+              delta.positive
+                ? { background: "var(--bg-300)", color: "var(--ink)" }
+                : { background: "rgba(217, 76, 92, 0.12)", color: "#B5374A" }
+            }
           >
             {delta.positive ? "↑" : "↓"} {delta.value}
           </span>
         )}
       </div>
-      <div className="mt-5">
-        <div className="text-2xl font-semibold tracking-tight text-white">{value}</div>
-        <div className="mt-1 text-xs text-[var(--muted-foreground)]">{label}</div>
+      <div>
+        <div
+          className="text-[34px] font-bold leading-none tracking-[-0.03em]"
+          style={{ color: "var(--ink)" }}
+        >
+          {value}
+        </div>
+        <div
+          className="mt-2 text-[13px]"
+          style={{ color: "var(--tx-md)" }}
+        >
+          {label}
+        </div>
       </div>
-      <div className="pointer-events-none absolute -right-6 -top-6 size-32 rounded-full bg-gradient-to-br from-[var(--accent-to)]/10 to-transparent blur-2xl" />
     </div>
   );
 }

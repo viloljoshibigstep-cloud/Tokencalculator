@@ -29,7 +29,7 @@ export function LoginForm() {
   return (
     <>
       {errFromUrl && (
-        <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
+        <div className="mb-4 rounded-lg border border-[rgba(217,76,92,0.3)] bg-[rgba(217,76,92,0.08)] p-3 text-xs text-[#B5374A]">
           {errFromUrl}
         </div>
       )}

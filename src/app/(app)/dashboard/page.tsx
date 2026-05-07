@@ -148,7 +148,7 @@ export default function OverviewPage() {
       <div className="mt-5 glass-card rounded-2xl p-5">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-base font-semibold text-white">Daily spend</h2>
+            <h2 className="text-base font-semibold text-[var(--tx-hi)]">Daily spend</h2>
             <p className="text-xs text-[var(--muted-foreground)]">
               Cost over selected window
             </p>
@@ -170,7 +170,7 @@ export default function OverviewPage() {
       <div className="mt-5 glass-card rounded-2xl p-5">
         <div className="mb-4 flex items-end justify-between">
           <div>
-            <h2 className="text-base font-semibold text-white">Activity (last 90 days)</h2>
+            <h2 className="text-base font-semibold text-[var(--tx-hi)]">Activity (last 90 days)</h2>
             <p className="text-xs text-[var(--muted-foreground)]">
               {allTimeKpis.activeDays} active days · longest streak {allTimeKpis.longestStreak}d
             </p>
@@ -191,7 +191,7 @@ export default function OverviewPage() {
 
       <div className="mt-5 glass-card rounded-2xl">
         <div className="flex items-center justify-between border-b border-[var(--border)] p-5">
-          <h2 className="text-base font-semibold text-white">Top sessions</h2>
+          <h2 className="text-base font-semibold text-[var(--tx-hi)]">Top sessions</h2>
           <span className="text-xs text-[var(--muted-foreground)]">
             From your latest snapshot
           </span>
@@ -217,11 +217,11 @@ export default function OverviewPage() {
                   <div className="col-span-3 truncate text-[var(--muted-foreground)]">
                     {timeAgo(s.date)}
                   </div>
-                  <div className="col-span-5 truncate text-white">{niceName}</div>
+                  <div className="col-span-5 truncate text-[var(--tx-hi)]">{niceName}</div>
                   <div className="col-span-2 truncate text-[var(--muted-foreground)] text-[11px]">
                     {s.calls.toLocaleString()} msgs
                   </div>
-                  <div className="col-span-2 text-right font-medium text-white">
+                  <div className="col-span-2 text-right font-medium text-[var(--tx-hi)]">
                     {formatCurrency(Number(s.cost), 2)}
                   </div>
                 </div>
@@ -239,7 +239,7 @@ function EmptyState() {
     <div className="mb-6 glass-card-strong rounded-2xl p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-semibold text-white">No data yet</h3>
+          <h3 className="text-base font-semibold text-[var(--tx-hi)]">No data yet</h3>
           <p className="mt-1 text-sm text-[var(--muted-foreground)]">
             Install the local agent to start tracking your AI coding spend.
           </p>

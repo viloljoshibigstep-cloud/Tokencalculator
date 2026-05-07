@@ -92,13 +92,13 @@ export default function ToolsPage() {
                   >
                     {detected && cost > 0 && (
                       <div
-                        className="pointer-events-none absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500/8 to-transparent"
+                        className="pointer-events-none absolute inset-y-0 left-0 bg-gradient-to-r from-[rgba(166,242,145,0.18)] to-transparent"
                         style={{ width: `${Math.min(100, pct)}%` }}
                       />
                     )}
                     <div className="relative col-span-1">
                       {detected ? (
-                        <span className="inline-flex size-6 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-300">
+                        <span className="inline-flex size-6 items-center justify-center rounded-md bg-[var(--bg-300)] text-[var(--ink)]">
                           <Check className="size-3.5" />
                         </span>
                       ) : (
@@ -108,7 +108,7 @@ export default function ToolsPage() {
                       )}
                     </div>
                     <div className="relative col-span-3">
-                      <div className="font-medium text-white">{t.label}</div>
+                      <div className="font-medium text-[var(--tx-hi)]">{t.label}</div>
                       <div className="text-[11px] text-[var(--muted-foreground)]">
                         {detected ? "Active" : "Not detected"}
                       </div>
@@ -125,7 +125,7 @@ export default function ToolsPage() {
                     <div className="relative col-span-1 text-right text-[var(--muted-foreground)] text-[11px]">
                       {detected ? formatNumber(tokens) : "—"}
                     </div>
-                    <div className="relative col-span-2 text-right font-semibold text-white">
+                    <div className="relative col-span-2 text-right font-semibold text-[var(--tx-hi)]">
                       {detected ? formatCurrency(cost) : "—"}
                     </div>
                   </div>
@@ -156,10 +156,10 @@ function SummaryTile({
 }) {
   const ring =
     accent === "emerald"
-      ? "from-emerald-400/20 to-emerald-400/5 text-emerald-300"
+      ? "from-emerald-400/20 to-emerald-400/5 text-[var(--ink)]"
       : accent === "cyan"
-        ? "from-cyan-400/20 to-cyan-400/5 text-cyan-300"
-        : "from-violet-400/20 to-violet-400/5 text-violet-300";
+        ? "from-cyan-400/20 to-cyan-400/5 text-[var(--tx-hi)]"
+        : "from-violet-400/20 to-violet-400/5 text-[var(--violet-500)]";
   return (
     <div className="glass-card rounded-2xl p-5">
       <div className="text-[11px] uppercase tracking-wider text-[var(--muted-foreground)]">

@@ -14,18 +14,22 @@ import { formatCurrency } from "@/lib/utils";
 
 export function UsageChart({ data }: { data: DailyBucket[] }) {
   return (
-    <ResponsiveContainer width="100%" height={320}>
-      <BarChart data={data} margin={{ top: 10, right: 12, left: -12, bottom: 0 }}>
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={data} margin={{ top: 14, right: 8, left: -16, bottom: 0 }}>
         <defs>
           <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.95} />
-            <stop offset="100%" stopColor="#34d399" stopOpacity={0.55} />
+            <stop offset="0%" stopColor="#A6F291" stopOpacity={1} />
+            <stop offset="100%" stopColor="#7FE066" stopOpacity={0.85} />
           </linearGradient>
         </defs>
-        <CartesianGrid stroke="rgba(34, 211, 238, 0.06)" strokeDasharray="3 3" vertical={false} />
+        <CartesianGrid
+          stroke="rgba(20, 24, 26, 0.06)"
+          strokeDasharray="3 3"
+          vertical={false}
+        />
         <XAxis
           dataKey="day"
-          stroke="#64748b"
+          stroke="#8A918E"
           fontSize={11}
           tickLine={false}
           axisLine={false}
@@ -35,22 +39,23 @@ export function UsageChart({ data }: { data: DailyBucket[] }) {
           }}
         />
         <YAxis
-          stroke="#64748b"
+          stroke="#8A918E"
           fontSize={11}
           tickLine={false}
           axisLine={false}
           tickFormatter={(v) => `$${v.toFixed(0)}`}
         />
         <Tooltip
-          cursor={{ fill: "rgba(34, 211, 238, 0.05)" }}
+          cursor={{ fill: "rgba(166, 242, 145, 0.18)" }}
           contentStyle={{
-            background: "rgba(12, 21, 28, 0.95)",
-            border: "1px solid rgba(34, 211, 238, 0.2)",
-            borderRadius: "8px",
-            color: "#f4f4f5",
+            background: "#14181A",
+            border: "0",
+            borderRadius: "12px",
+            color: "#F2F4F1",
             fontSize: "12px",
+            boxShadow: "0 18px 40px -20px rgba(20, 24, 26, 0.5)",
           }}
-          labelStyle={{ color: "#94a3b8", marginBottom: "4px" }}
+          labelStyle={{ color: "#9CA3A0", marginBottom: "4px", fontWeight: 600 }}
           formatter={(value, name) => {
             const v = Number(value ?? 0);
             return name === "cost"
@@ -58,7 +63,7 @@ export function UsageChart({ data }: { data: DailyBucket[] }) {
               : [v.toLocaleString(), String(name)];
           }}
         />
-        <Bar dataKey="cost" fill="url(#barFill)" radius={[6, 6, 0, 0]} maxBarSize={48} />
+        <Bar dataKey="cost" fill="url(#barFill)" radius={[10, 10, 4, 4]} maxBarSize={46} />
       </BarChart>
     </ResponsiveContainer>
   );

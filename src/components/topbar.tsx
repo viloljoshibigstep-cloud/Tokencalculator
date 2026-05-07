@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 
 const ranges = ["1D", "7D", "30D", "3M", "1Y"] as const;
 export type Range = (typeof ranges)[number];
@@ -14,21 +13,30 @@ export function RangeSelector({
   onChange: (v: Range) => void;
 }) {
   return (
-    <div className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-strong)] bg-[var(--card)] p-1">
-      {ranges.map((r) => (
-        <button
-          key={r}
-          onClick={() => onChange(r)}
-          className={cn(
-            "rounded-md px-3 py-1 text-xs font-medium transition-all",
-            value === r
-              ? "gradient-bg text-black"
-              : "text-[var(--muted-foreground)] hover:text-white",
-          )}
-        >
-          {r}
-        </button>
-      ))}
+    <div
+      className="inline-flex items-center gap-0.5 rounded-full p-1"
+      style={{
+        background: "var(--bg-100)",
+        border: "1px solid var(--line)",
+      }}
+    >
+      {ranges.map((r) => {
+        const on = value === r;
+        return (
+          <button
+            key={r}
+            onClick={() => onChange(r)}
+            className="rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition-colors"
+            style={
+              on
+                ? { background: "var(--ink)", color: "var(--tx-on-ink)" }
+                : { background: "transparent", color: "var(--tx-md)" }
+            }
+          >
+            {r}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -36,18 +44,35 @@ export function RangeSelector({
 export function Topbar({
   title,
   subtitle,
+  eyebrow,
   children,
 }: {
   title: string;
   subtitle?: string;
+  eyebrow?: string;
   children?: React.ReactNode;
 }) {
   return (
-    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-white">{title}</h1>
+        {eyebrow && (
+          <div
+            className="text-[12px] font-semibold uppercase tracking-[0.14em]"
+            style={{ color: "var(--tx-lo)" }}
+          >
+            {eyebrow}
+          </div>
+        )}
+        <h1
+          className="mt-2 text-[34px] font-bold leading-[1.05] tracking-[-0.025em]"
+          style={{ color: "var(--tx-hi)" }}
+        >
+          {title}
+        </h1>
         {subtitle && (
-          <p className="mt-1 text-sm text-[var(--muted-foreground)]">{subtitle}</p>
+          <p className="mt-2 text-sm" style={{ color: "var(--tx-md)" }}>
+            {subtitle}
+          </p>
         )}
       </div>
       {children && <div className="flex items-center gap-3">{children}</div>}
