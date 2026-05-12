@@ -147,8 +147,8 @@ export default function EfficiencyPage() {
       </div>
 
       {/* By-role aggregate */}
-      <div className="mb-5 glass-card rounded-2xl p-5">
-        <h2 className="mb-4 text-base font-semibold text-white">By job role</h2>
+      <div className="mb-5 card rounded-2xl p-5">
+        <h2 className="mb-4 text-base font-semibold text-[var(--tx-hi)]">By job role</h2>
         {byRole.length === 0 ? (
           <div className="text-sm text-[var(--muted-foreground)]">
             No role data yet. Members will appear here once they complete onboarding.
@@ -166,7 +166,7 @@ export default function EfficiencyPage() {
               return (
                 <div key={r.role}>
                   <div className="mb-1 flex justify-between text-sm">
-                    <span className="font-medium text-white">
+                    <span className="font-medium text-[var(--tx-hi)]">
                       {r.role}{" "}
                       <span className="ml-1 text-[11px] text-[var(--muted-foreground)]">
                         · {r.users} {r.users === 1 ? "user" : "users"}
@@ -178,7 +178,7 @@ export default function EfficiencyPage() {
                         : "no usage"}
                     </span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-[var(--muted)]">
+                  <div className="h-2 overflow-hidden rounded-full bg-[var(--bg-300)]">
                     <div
                       className={`h-full bg-gradient-to-r transition-all ${overColor}`}
                       style={{ width: `${pct}%` }}
@@ -192,7 +192,7 @@ export default function EfficiencyPage() {
       </div>
 
       {/* Per-user table */}
-      <div className="glass-card rounded-2xl">
+      <div className="card rounded-2xl">
         <div className="grid grid-cols-12 gap-3 border-b border-[var(--border)] px-5 py-3 text-[11px] font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
           <SortHeader
             label="User"
@@ -238,7 +238,7 @@ export default function EfficiencyPage() {
                 className="grid grid-cols-12 items-center gap-3 px-5 py-3 text-sm"
               >
                 <div className="col-span-3 min-w-0">
-                  <div className="truncate font-medium text-white">
+                  <div className="truncate font-medium text-[var(--tx-hi)]">
                     {r.full_name || r.email.split("@")[0]}
                   </div>
                   <div className="truncate text-[11px] text-[var(--muted-foreground)]">
@@ -254,7 +254,7 @@ export default function EfficiencyPage() {
                   </div>
                 </div>
                 <div className="col-span-2 text-right">
-                  <div className="text-white">
+                  <div className="text-[var(--tx-hi)]">
                     {formatNumber(Number(r.actual_working_tokens_30d))}
                   </div>
                   <div className="text-[11px] text-[var(--muted-foreground)]">
@@ -264,7 +264,7 @@ export default function EfficiencyPage() {
                 <div className="col-span-2 text-right text-[var(--muted-foreground)]">
                   {formatNumber(Number(r.expected_tokens_30d))}
                 </div>
-                <div className="col-span-1 text-right font-semibold text-white">
+                <div className="col-span-1 text-right font-semibold text-[var(--tx-hi)]">
                   {r.efficiency_ratio != null
                     ? `${Math.round(r.efficiency_ratio * 100)}%`
                     : "—"}
@@ -303,7 +303,7 @@ function SortHeader({
   return (
     <button
       onClick={onClick}
-      className={`col-span-${span} text-${align} transition-colors hover:text-white ${
+      className={`col-span-${span} text-${align} transition-colors hover:text-[var(--tx-hi)] ${
         active ? "text-[var(--accent-to)]" : ""
       }`}
       style={{ gridColumn: `span ${span} / span ${span}` }}
@@ -327,13 +327,13 @@ function SummaryCard({
   accent: "emerald" | "cyan" | "amber" | "violet";
 }) {
   const accentClasses = {
-    emerald: "from-emerald-400/20 to-emerald-400/5 text-emerald-300",
-    cyan: "from-cyan-400/20 to-cyan-400/5 text-cyan-300",
-    amber: "from-amber-400/20 to-amber-400/5 text-amber-300",
-    violet: "from-violet-400/20 to-violet-400/5 text-violet-300",
+    emerald: "from-emerald-100 to-emerald-50 text-emerald-700",
+    cyan:    "from-sky-100 to-sky-50 text-sky-700",
+    amber:   "from-amber-100 to-amber-50 text-amber-800",
+    violet:  "from-violet-100 to-violet-50 text-violet-700",
   } as const;
   return (
-    <div className="glass-card relative overflow-hidden rounded-2xl p-5">
+    <div className="card relative overflow-hidden rounded-2xl p-5">
       <div className="flex items-center gap-3">
         <div
           className={`flex size-10 items-center justify-center rounded-xl bg-gradient-to-br ${accentClasses[accent]}`}
@@ -344,7 +344,7 @@ function SummaryCard({
           {label}
         </div>
       </div>
-      <div className="mt-4 text-2xl font-semibold tracking-tight text-white">{value}</div>
+      <div className="mt-4 text-2xl font-semibold tracking-tight text-[var(--tx-hi)]">{value}</div>
       <div className="mt-1 text-[11px] text-[var(--muted-foreground)]">{hint}</div>
     </div>
   );
@@ -352,10 +352,10 @@ function SummaryCard({
 
 function EmptyState() {
   return (
-    <div className="mb-6 glass-card-strong rounded-2xl p-6">
+    <div className="mb-6 card-strong rounded-2xl p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-semibold text-white">No efficiency data yet</h3>
+          <h3 className="text-base font-semibold text-[var(--tx-hi)]">No efficiency data yet</h3>
           <p className="mt-1 text-sm text-[var(--muted-foreground)]">
             Complete your role profile and install the agent to see your efficiency
             benchmark.

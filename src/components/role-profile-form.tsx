@@ -125,7 +125,7 @@ export function RoleProfileForm({ initial, onSaved, submitLabel = "Save profile"
                   : "border-[var(--border-strong)] hover:bg-[var(--card-elevated)]",
               )}
             >
-              <span className="text-sm font-medium text-white">{p.label}</span>
+              <span className="text-sm font-medium text-[var(--tx-hi)]">{p.label}</span>
               <span className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">
                 {p.hint}
               </span>
@@ -146,8 +146,8 @@ export function RoleProfileForm({ initial, onSaved, submitLabel = "Save profile"
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-xs transition-all",
                   active
-                    ? "border-[var(--accent-to)]/60 bg-[var(--accent-to)]/10 text-white"
-                    : "border-[var(--border-strong)] text-[var(--muted-foreground)] hover:text-white",
+                    ? "border-[var(--accent-to)]/60 bg-[var(--accent-to)]/10 text-[var(--tx-hi)]"
+                    : "border-[var(--border-strong)] text-[var(--muted-foreground)] hover:text-[var(--tx-hi)]",
                 )}
               >
                 {t}

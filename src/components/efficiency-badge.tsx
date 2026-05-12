@@ -20,7 +20,7 @@ export function EfficiencyBadge({ band, ratio, size = "md" }: Props) {
       <span className="size-1.5 rounded-full bg-current" />
       {BAND_LABELS[band]}
       {ratio != null && (
-        <span className="text-current/70 ml-0.5">· {Math.round(ratio * 100)}%</span>
+        <span className="ml-0.5 opacity-70">· {Math.round(ratio * 100)}%</span>
       )}
     </span>
   );

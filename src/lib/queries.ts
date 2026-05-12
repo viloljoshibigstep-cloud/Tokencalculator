@@ -425,10 +425,12 @@ export const BAND_LABELS: Record<EfficiencyBand, string> = {
 
 // Tailwind classes for band pills. Same vocab used on the Overview KPI and
 // the /efficiency table so admins read at a glance.
+// Light-theme band pills. Background is a very pale tint, text and border
+// are darker so they remain legible on the white card surface.
 export const BAND_STYLES: Record<EfficiencyBand, string> = {
-  inactive:        "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
-  light:           "bg-sky-500/10 text-sky-300 border-sky-500/25",
-  optimal:         "bg-emerald-500/10 text-emerald-300 border-emerald-500/25",
-  on_budget:       "bg-amber-500/10 text-amber-300 border-amber-500/25",
-  over_consuming:  "bg-red-500/10 text-red-300 border-red-500/30",
+  inactive:        "bg-zinc-100 text-zinc-700 border-zinc-200",
+  light:           "bg-sky-50 text-sky-700 border-sky-200",
+  optimal:         "bg-emerald-50 text-emerald-700 border-emerald-200",
+  on_budget:       "bg-amber-50 text-amber-800 border-amber-200",
+  over_consuming:  "bg-red-50 text-red-700 border-red-200",
 };

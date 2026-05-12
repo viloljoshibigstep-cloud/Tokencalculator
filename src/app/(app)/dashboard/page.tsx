@@ -275,14 +275,16 @@ function EfficiencyPanel({ efficiency }: { efficiency: EfficiencyRow | null }) {
   // No profile yet → nudge to onboarding
   if (!efficiency.profile_completed_at) {
     return (
-      <div className="mt-4 glass-card rounded-2xl p-5">
+      <div className="mt-4 card rounded-2xl p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400/20 to-cyan-400/5 text-cyan-300">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-[var(--bg-300)] text-[var(--ink)]">
               <Gauge className="size-5" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-white">Efficiency benchmark not set</div>
+              <div className="text-sm font-semibold text-[var(--tx-hi)]">
+                Efficiency benchmark not set
+              </div>
               <div className="text-[11px] text-[var(--muted-foreground)]">
                 Complete your role profile to see how your token usage compares to expected.
               </div>
@@ -290,7 +292,7 @@ function EfficiencyPanel({ efficiency }: { efficiency: EfficiencyRow | null }) {
           </div>
           <Link
             href="/onboarding"
-            className="rounded-lg bg-[var(--card-elevated)] border border-[var(--border-strong)] px-3 py-1.5 text-xs font-medium text-white hover:bg-[var(--muted)]"
+            className="rounded-lg bg-[var(--card-elevated)] border border-[var(--border-strong)] px-3 py-1.5 text-xs font-medium text-[var(--tx-hi)] hover:bg-[var(--bg-300)]"
           >
             Complete profile →
           </Link>
@@ -307,17 +309,19 @@ function EfficiencyPanel({ efficiency }: { efficiency: EfficiencyRow | null }) {
       ? "from-red-500 to-red-400"
       : efficiency.band === "on_budget"
         ? "from-amber-500 to-amber-400"
-        : "from-emerald-500 to-cyan-400";
+        : "from-emerald-500 to-emerald-400";
 
   return (
-    <div className="mt-4 glass-card rounded-2xl p-5">
+    <div className="mt-4 card rounded-2xl p-5">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400/20 to-emerald-400/5 text-emerald-300">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-[var(--bg-300)] text-[var(--ink)]">
             <Gauge className="size-5" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-white">Your token efficiency</div>
+            <div className="text-sm font-semibold text-[var(--tx-hi)]">
+              Your token efficiency
+            </div>
             <div className="text-[11px] text-[var(--muted-foreground)]">
               Rolling 30 days · {efficiency.job_role}{" "}
               {efficiency.seniority && `(${efficiency.seniority})`}
@@ -341,7 +345,13 @@ function EfficiencyPanel({ efficiency }: { efficiency: EfficiencyRow | null }) {
         <Stat
           label="Ratio"
           value={ratio != null ? `${pct}%` : "—"}
-          hint={ratio == null ? "no activity yet" : ratio < 1 ? "under budget" : "over budget"}
+          hint={
+            ratio == null
+              ? "no activity yet"
+              : ratio < 1
+                ? "under budget"
+                : "over budget"
+          }
         />
       </div>
 
@@ -351,14 +361,14 @@ function EfficiencyPanel({ efficiency }: { efficiency: EfficiencyRow | null }) {
           <span>100% (budget)</span>
           <span>150%+</span>
         </div>
-        <div className="relative h-2 overflow-hidden rounded-full bg-[var(--muted)]">
+        <div className="relative h-2 overflow-hidden rounded-full bg-[var(--bg-300)]">
           <div
             className={`h-full bg-gradient-to-r transition-all ${barColor}`}
             style={{ width: `${(pctWidth / 150) * 100}%` }}
           />
-          {/* 100% marker */}
+          {/* 100% marker — dark sliver against the pale fill */}
           <div
-            className="absolute top-0 h-full w-px bg-white/40"
+            className="absolute top-0 h-full w-px bg-[var(--ink)]/40"
             style={{ left: `${(100 / 150) * 100}%` }}
           />
         </div>
@@ -369,11 +379,13 @@ function EfficiencyPanel({ efficiency }: { efficiency: EfficiencyRow | null }) {
 
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-3">
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--card-elevated)] p-3">
       <div className="text-[11px] uppercase tracking-wider text-[var(--muted-foreground)]">
         {label}
       </div>
-      <div className="mt-1 text-xl font-semibold tracking-tight text-white">{value}</div>
+      <div className="mt-1 text-xl font-semibold tracking-tight text-[var(--tx-hi)]">
+        {value}
+      </div>
       {hint && <div className="text-[11px] text-[var(--muted-foreground)]">{hint}</div>}
     </div>
   );
