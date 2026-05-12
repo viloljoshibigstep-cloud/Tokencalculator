@@ -406,21 +406,39 @@ function EfficiencyPanel({
       </div>
 
       <div className="mt-4">
-        <div className="mb-1 flex justify-between text-[11px] text-[var(--muted-foreground)]">
-          <span>0%</span>
-          <span>100% (budget)</span>
-          <span>150%+</span>
-        </div>
-        <div className="relative h-2 overflow-hidden rounded-full bg-[var(--bg-300)]">
+        <div className="relative h-3 rounded-full bg-[var(--bg-300)]">
+          {/* Fill: clamp to a small min-width when there's any usage so the
+              gradient is visible even at 1–3% ratios. */}
+          {ratio != null && ratio > 0 && (
+            <div
+              className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r transition-all duration-500 ${barColor}`}
+              style={{
+                width: `max(8px, ${(pctWidth / 150) * 100}%)`,
+              }}
+            />
+          )}
+          {/* 100% budget marker — visible bar with cap dot above. */}
           <div
-            className={`h-full bg-gradient-to-r transition-all ${barColor}`}
-            style={{ width: `${(pctWidth / 150) * 100}%` }}
-          />
-          {/* 100% marker — dark sliver against the pale fill */}
-          <div
-            className="absolute top-0 h-full w-px bg-[var(--ink)]/40"
+            className="absolute -top-1 bottom-[-4px] w-[2px] bg-[var(--ink)]"
             style={{ left: `${(100 / 150) * 100}%` }}
           />
+          <div
+            className="absolute -top-[3px] size-[7px] -translate-x-1/2 rounded-full bg-[var(--ink)]"
+            style={{ left: `${(100 / 150) * 100}%` }}
+          />
+          {/* Indicator dot at current ratio so you can see "where you are"
+              even when the fill is tiny. */}
+          {ratio != null && ratio > 0 && (
+            <div
+              className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow ring-2 ring-[var(--ink)] transition-all duration-500"
+              style={{ left: `${(pctWidth / 150) * 100}%` }}
+            />
+          )}
+        </div>
+        <div className="mt-2 flex justify-between text-[11px] text-[var(--muted-foreground)]">
+          <span>0%</span>
+          <span className="font-medium text-[var(--tx-hi)]">100% budget</span>
+          <span>150%+</span>
         </div>
       </div>
     </div>
