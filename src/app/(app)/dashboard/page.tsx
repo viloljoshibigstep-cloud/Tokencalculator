@@ -27,6 +27,7 @@ import {
   fetchMyEfficiency,
   rangeToPeriod,
   type CodeburnSnapshot,
+  type EfficiencyBand,
   type EfficiencyRow,
   type UsageRow,
 } from "@/lib/queries";
@@ -130,12 +131,21 @@ export default function OverviewPage() {
         />
       </div>
 
-      <EfficiencyPanel efficiency={efficiency} />
+      <EfficiencyPanel
+        efficiency={efficiency}
+        scopedSnapshot={scopedSnapshot}
+        range={range}
+      />
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label="Active Days"
-          value={String(allTimeKpis.activeDays)}
+          value={String(
+            // Range-scoped: count distinct days from codeburn's daily array
+            // (matches the snapshot's period). Falls back to event-row days.
+            scopedSnapshot?.daily?.filter((d) => Number(d.cost) > 0)?.length
+              ?? kpis.activeDays,
+          )}
           icon={CalendarDays}
           accent="emerald"
         />
@@ -269,7 +279,15 @@ function EmptyState() {
   );
 }
 
-function EfficiencyPanel({ efficiency }: { efficiency: EfficiencyRow | null }) {
+function EfficiencyPanel({
+  efficiency,
+  scopedSnapshot,
+  range,
+}: {
+  efficiency: EfficiencyRow | null;
+  scopedSnapshot: CodeburnSnapshot | null;
+  range: string;
+}) {
   if (!efficiency) return null;
 
   // No profile yet → nudge to onboarding
@@ -301,15 +319,47 @@ function EfficiencyPanel({ efficiency }: { efficiency: EfficiencyRow | null }) {
     );
   }
 
-  const ratio = efficiency.efficiency_ratio;
+  // Range-matched math. Pull actuals from the snapshot codeburn produced for
+  // this exact period — keeps the panel in sync with the KPI row above it.
+  const benchmarkPerDay = Number(efficiency.benchmark_tokens_per_day);
+  const overview = scopedSnapshot?.overview;
+  const tokens = overview?.tokens;
+  const actualTokens = tokens
+    ? Number(tokens.input ?? 0) + Number(tokens.output ?? 0)
+    : 0;
+  const activeDays =
+    scopedSnapshot?.daily?.filter((d) => Number(d.cost) > 0)?.length ?? 0;
+  const periodDays = Math.max(activeDays, 1);
+  const expectedTokens = benchmarkPerDay * periodDays;
+  const ratio = activeDays > 0 ? actualTokens / expectedTokens : null;
+  const band: EfficiencyBand =
+    activeDays === 0
+      ? "inactive"
+      : ratio == null
+        ? "inactive"
+        : ratio < 0.5
+          ? "light"
+          : ratio <= 1.0
+            ? "optimal"
+            : ratio <= 1.25
+              ? "on_budget"
+              : "over_consuming";
+
   const pct = ratio != null ? Math.round(ratio * 100) : 0;
   const pctWidth = Math.min(150, pct);
   const barColor =
-    efficiency.band === "over_consuming"
+    band === "over_consuming"
       ? "from-red-500 to-red-400"
-      : efficiency.band === "on_budget"
+      : band === "on_budget"
         ? "from-amber-500 to-amber-400"
         : "from-emerald-500 to-emerald-400";
+  const rangeLabel: Record<string, string> = {
+    "1D": "Today",
+    "7D": "Rolling 7 days",
+    "30D": "Rolling 30 days",
+    "3M": "Last 3 months",
+    "1Y": "All time",
+  };
 
   return (
     <div className="mt-4 card rounded-2xl p-5">
@@ -323,24 +373,24 @@ function EfficiencyPanel({ efficiency }: { efficiency: EfficiencyRow | null }) {
               Your token efficiency
             </div>
             <div className="text-[11px] text-[var(--muted-foreground)]">
-              Rolling 30 days · {efficiency.job_role}{" "}
+              {rangeLabel[range] ?? range} · {efficiency.job_role}{" "}
               {efficiency.seniority && `(${efficiency.seniority})`}
             </div>
           </div>
         </div>
-        <EfficiencyBadge band={efficiency.band} ratio={ratio} />
+        <EfficiencyBadge band={band} ratio={ratio} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat
           label="Actual"
-          value={formatNumber(Number(efficiency.actual_working_tokens_30d))}
-          hint={`${efficiency.active_days_30d}d active`}
+          value={formatNumber(actualTokens)}
+          hint={`${activeDays}d active`}
         />
         <Stat
           label="Expected"
-          value={formatNumber(Number(efficiency.expected_tokens_30d))}
-          hint={`${formatNumber(Number(efficiency.benchmark_tokens_per_day))} / day`}
+          value={formatNumber(expectedTokens)}
+          hint={`${formatNumber(benchmarkPerDay)} / day`}
         />
         <Stat
           label="Ratio"
