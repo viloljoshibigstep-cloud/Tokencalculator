@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/topbar";
+import { ProfileEditor } from "./profile-editor";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -22,11 +23,22 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <Topbar title="Settings" subtitle="Your profile and registered machines" />
+      <Topbar title="Settings" subtitle="Your profile, role benchmark, and registered machines" />
+
+      <div className="mb-4 glass-card rounded-2xl p-6">
+        <h2 className="mb-1 text-sm font-semibold text-[var(--tx-hi)]">
+          Role profile
+        </h2>
+        <p className="mb-5 text-[11px] text-[var(--muted-foreground)]">
+          Drives the expected token budget on /efficiency. Updates take effect on
+          the next page load.
+        </p>
+        <ProfileEditor />
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="glass-card rounded-2xl p-6">
-          <h2 className="mb-5 text-sm font-semibold text-[var(--tx-hi)]">Profile</h2>
+          <h2 className="mb-5 text-sm font-semibold text-[var(--tx-hi)]">Account</h2>
           <Field label="Name" value={profile?.full_name ?? "—"} />
           <Field label="Email" value={profile?.email ?? user.email ?? "—"} />
           <Field

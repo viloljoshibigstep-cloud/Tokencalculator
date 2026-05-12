@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Copy, Terminal, Cpu, Activity, Loader2 } from "lucide-react";
+import { Check, Copy, Terminal, Cpu, Activity, Loader2, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { RoleProfileForm } from "@/components/role-profile-form";
+import { fetchProfileQuestionnaire, type ProfileQuestionnaire } from "@/lib/queries";
 
 interface MachineInfo {
   id: string;
@@ -20,6 +22,8 @@ export function OnboardingClient() {
   const [error, setError] = useState<string | null>(null);
   const [waitingForFirstSync, setWaitingForFirstSync] = useState(false);
   const [agentSeen, setAgentSeen] = useState(false);
+  const [profile, setProfile] = useState<ProfileQuestionnaire | null>(null);
+  const profileDone = !!profile?.profile_completed_at;
 
   useEffect(() => {
     const hostname = typeof window !== "undefined" ? window.location.hostname : "";
@@ -28,18 +32,23 @@ export function OnboardingClient() {
     setName(`${platform} laptop`);
 
     const supabase = createClient();
-    supabase
-      .from("machines")
-      .select("id, install_token, name, last_seen_at")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setMachine(data as MachineInfo);
-          if (data.last_seen_at) setAgentSeen(true);
-        }
-      });
+    (async () => {
+      const { data: userResp } = await supabase.auth.getUser();
+      if (userResp.user) {
+        const q = await fetchProfileQuestionnaire(supabase, userResp.user.id);
+        setProfile(q);
+      }
+      const { data } = await supabase
+        .from("machines")
+        .select("id, install_token, name, last_seen_at")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setMachine(data as MachineInfo);
+        if (data.last_seen_at) setAgentSeen(true);
+      }
+    })();
     void hostname;
   }, []);
 
@@ -94,9 +103,47 @@ export function OnboardingClient() {
     <div className="space-y-6">
       <Step
         n={1}
+        title="Tell us about your work"
+        icon={UserCog}
+        done={profileDone}
+        active={!profileDone}
+      >
+        {profileDone ? (
+          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">
+            <div className="flex items-center gap-2 text-[var(--ink)]">
+              <Check className="size-4" />
+              <span>
+                Profile saved · <strong>{profile?.job_role}</strong>
+                {profile?.seniority ? ` (${profile.seniority})` : ""}
+                {profile?.team ? ` · ${profile.team}` : ""}
+              </span>
+            </div>
+            <p className="mt-1 pl-6 text-[11px] text-[var(--muted-foreground)]">
+              We use this to compute your expected token budget. Edit anytime in Settings.
+            </p>
+          </div>
+        ) : (
+          <>
+            <p className="mb-4 text-sm text-[var(--muted-foreground)]">
+              Quick questionnaire — sets your expected daily token budget so we can
+              measure how efficiently you&apos;re using AI vs people in similar roles.
+            </p>
+            <RoleProfileForm
+              initial={profile}
+              onSaved={(q) => setProfile(q)}
+              submitLabel="Save profile"
+              compact
+            />
+          </>
+        )}
+      </Step>
+
+      <Step
+        n={2}
         title="Install Node.js (skip if you have it)"
         icon={Terminal}
         done={true}
+        disabled={!profileDone}
       >
         <p className="mb-3 text-sm text-[var(--muted-foreground)]">
           The agent needs Node.js 20 or later. Check your version:
@@ -117,11 +164,12 @@ export function OnboardingClient() {
       </Step>
 
       <Step
-        n={2}
+        n={3}
         title="Register this machine"
         icon={Cpu}
         done={!!machine}
-        active={!machine}
+        active={profileDone && !machine}
+        disabled={!profileDone}
       >
         {!machine ? (
           <div className="space-y-3">
@@ -156,7 +204,7 @@ export function OnboardingClient() {
       </Step>
 
       <Step
-        n={3}
+        n={4}
         title="Install the agent"
         icon={Terminal}
         done={agentSeen}
@@ -190,7 +238,7 @@ export function OnboardingClient() {
       </Step>
 
       <Step
-        n={4}
+        n={5}
         title="Verify it's working"
         icon={Activity}
         done={agentSeen}

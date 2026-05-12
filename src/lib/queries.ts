@@ -326,3 +326,109 @@ export function breakdownBy(rows: UsageRow[], field: keyof UsageRow): BreakdownR
   }
   return [...map.values()].sort((a, b) => b.cost - a.cost);
 }
+
+// =====================
+// Profile questionnaire + efficiency
+// =====================
+
+export type Seniority = "junior" | "mid" | "senior" | "staff" | "principal";
+export type ExpectedPattern = "light" | "moderate" | "heavy";
+export type EfficiencyBand =
+  | "inactive"
+  | "light"
+  | "optimal"
+  | "on_budget"
+  | "over_consuming";
+
+export interface ProfileQuestionnaire {
+  job_role: string | null;
+  department: string | null;
+  seniority: Seniority | null;
+  task_types: string[] | null;
+  expected_pattern: ExpectedPattern | null;
+  team: string | null;
+  industry: string | null;
+  profile_completed_at: string | null;
+}
+
+export interface EfficiencyRow {
+  user_id: string;
+  email: string;
+  full_name: string | null;
+  job_role: string | null;
+  department: string | null;
+  team: string | null;
+  seniority: Seniority | null;
+  expected_pattern: ExpectedPattern | null;
+  task_types: string[] | null;
+  profile_completed_at: string | null;
+  benchmark_tokens_per_day: number;
+  benchmark_cost_per_day_usd: number;
+  actual_working_tokens_30d: number;
+  actual_cache_tokens_30d: number;
+  actual_cost_30d: number;
+  actual_calls_30d: number;
+  active_days_30d: number;
+  expected_tokens_30d: number;
+  expected_cost_30d: number;
+  efficiency_ratio: number | null;
+  band: EfficiencyBand;
+}
+
+export async function fetchMyEfficiency(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<EfficiencyRow | null> {
+  const { data, error } = await supabase
+    .from("user_efficiency")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) return null;
+  return (data ?? null) as EfficiencyRow | null;
+}
+
+// Admin-only — RLS view filters to (self or is_admin()), so non-admins get [their row].
+export async function fetchAllEfficiency(
+  supabase: SupabaseClient,
+): Promise<EfficiencyRow[]> {
+  const { data, error } = await supabase
+    .from("user_efficiency")
+    .select("*")
+    .order("efficiency_ratio", { ascending: false, nullsFirst: false });
+  if (error || !data) return [];
+  return data as EfficiencyRow[];
+}
+
+export async function fetchProfileQuestionnaire(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<ProfileQuestionnaire | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select(
+      "job_role, department, seniority, task_types, expected_pattern, team, industry, profile_completed_at",
+    )
+    .eq("id", userId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as ProfileQuestionnaire;
+}
+
+export const BAND_LABELS: Record<EfficiencyBand, string> = {
+  inactive: "No activity",
+  light: "Light usage",
+  optimal: "Optimal",
+  on_budget: "On budget",
+  over_consuming: "Over budget",
+};
+
+// Tailwind classes for band pills. Same vocab used on the Overview KPI and
+// the /efficiency table so admins read at a glance.
+export const BAND_STYLES: Record<EfficiencyBand, string> = {
+  inactive:        "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
+  light:           "bg-sky-500/10 text-sky-300 border-sky-500/25",
+  optimal:         "bg-emerald-500/10 text-emerald-300 border-emerald-500/25",
+  on_budget:       "bg-amber-500/10 text-amber-300 border-amber-500/25",
+  over_consuming:  "bg-red-500/10 text-red-300 border-red-500/30",
+};

@@ -11,6 +11,7 @@ import {
   Download,
   LogOut,
   Boxes,
+  Gauge,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
@@ -32,6 +33,7 @@ const SECTIONS: {
     label: "Workspace",
     items: [
       { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+      { href: "/efficiency", label: "Efficiency", icon: Gauge },
       { href: "/team", label: "Team", icon: Users, adminOnly: true },
       { href: "/projects", label: "Projects", icon: FolderKanban },
       { href: "/tools", label: "Tools / IDEs", icon: Boxes },
